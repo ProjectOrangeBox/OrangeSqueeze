@@ -1,0 +1,15 @@
+{
+	"name": "projectorangebox/cache",
+	"authors": [{
+		"name": "Don Myers",
+		"email": "donmyers@me.com",
+		"homepage": "https://github.com/ProjectOrangeBox",
+		"role": "Everything"
+	}],
+	"description": "Cache",
+	"autoload": {
+		"psr-4": {
+			"projectorangebox\\cache\\": "src"
+		}
+	}
+}
