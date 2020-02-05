@@ -121,6 +121,17 @@ function array_sort_by_column(array &$array, string $column, int $dir = SORT_ASC
 	array_multisort($sortColumn, $dir, $array, $flags);
 }
 
+if (!function_exists('env')) {
+	function env(string $key, $default = '#NOVALUE#') /* mixed */
+	{
+		if (!isset($_ENV[$key]) && $default === '#NOVALUE#') {
+			throw new \Exception('The environmental variable "' . $key . '" is not set and no default was provided.');
+		}
+
+		return (isset($_ENV[$key])) ? $_ENV[$key] : $default;
+	}
+}
+
 /**
  * $cached = searchFor('/folder/folder/*.md', 'markdown.plugins', $container->cache),
  * $cached = searchFor('/folder/folder/*.hbs', 'handlebar.templates', $container->cache),

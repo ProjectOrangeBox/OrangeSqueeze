@@ -42,6 +42,24 @@ class App implements AppInterface
 		/* Set File System Functions Root Directory and chdir to it */
 		FS::setRoot(__ROOT__, true);
 
+		/* default to production environment */
+		define('ENVIRONMENT', ($config['environment'] ?? 'production'));
+
+		/* load the users ENVIRONMENT bootstrap file if present */
+		if (FS::file_exists('Bootstrap.' . ENVIRONMENT . '.php')) {
+			require FS::resolve('Bootstrap.' . ENVIRONMENT . '.php');
+		}
+
+		/* load the users bootstrap file if present */
+		if (FS::file_exists('Bootstrap.php')) {
+			require FS::resolve('Bootstrap.php');
+		}
+
+		/* if there is a env file merge it with the global $_ENV */
+		if (FS::file_exists('.env')) {
+			$_ENV = array_merge($_ENV, parse_ini_file(FS::resolve('.env'), true, INI_SCANNER_TYPED));
+		}
+
 		/* use default */
 		$config['services config file'] = $config['services config file'] ?? '/config/services.php';
 
