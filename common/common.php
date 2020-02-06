@@ -166,7 +166,7 @@ if (!function_exists('searchFor')) {
 }
 
 if (!function_exists('mergeConfig')) {
-	function mergeConfig(array $passed, array $defaults): array
+	function mergeConfig(array $array, array $defaults): array
 	{
 		foreach ($defaults as $name => $default) {
 			if (\is_integer($name)) {
@@ -174,16 +174,16 @@ if (!function_exists('mergeConfig')) {
 				$default = '#NOVALUE#';
 			}
 
-			if (!isset($passed[$name])) {
+			if (!isset($array[$name])) {
 				if ($default === '#NOVALUE#') {
 					/* fatal */
 					throw new \Exception('Could not locate a configuration value ' . $name . ' and no default was provided.');
 				}
 
-				$passed[$name] = $default;
+				$array[$name] = $default;
 			}
 		}
 
-		return $passed;
+		return $array;
 	}
 }
