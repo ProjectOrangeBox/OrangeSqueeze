@@ -21,7 +21,7 @@ class Container implements ContainerInterface
 	{
 		if (is_array($serviceArray)) {
 			foreach ($serviceArray as $serviceName => $closureSingleton) {
-				$this->register($serviceName, $closureSingleton[0], $closureSingleton[1]);
+				$this->register($serviceName, $closureSingleton[0], ($closureSingleton[1] ?? true));
 			}
 		}
 	}
@@ -118,7 +118,7 @@ class Container implements ContainerInterface
 	 * @param bool $singleton should this be a singleton or factory
 	 * @return void
 	 */
-	public function register(string $serviceName, \closure $closure, bool $singleton = false): void
+	public function register(string $serviceName, \closure $closure, bool $singleton = true): void
 	{
 		$this->registeredServices[strtolower($serviceName)] = ['closure' => $closure, 'singleton' => $singleton, 'reference' => null];
 	}
