@@ -8,15 +8,13 @@ use projectorangebox\container\ContainerInterface;
 
 class Middleware implements MiddlewareInterface
 {
+	protected $config;
 	protected $container;
-	protected $requestRoutes = [];
-	protected $responseRoutes = [];
 
-	public function __construct(ContainerInterface &$container, array $requestRoutes = [], array $responseRoutes = [])
+	public function __construct(array $config, ContainerInterface &$container)
 	{
+		$this->config = $config;
 		$this->container = $container;
-		$this->routes['request'] = $requestRoutes;
-		$this->routes['response'] = $responseRoutes;
 	}
 
 	public function request(): void
@@ -33,8 +31,8 @@ class Middleware implements MiddlewareInterface
 	{
 		$httpMethod = $this->container->request->requestMethod();
 
-		if (isset($this->routes[$method], $this->routes[$method][$httpMethod])) {
-			foreach ($this->routes[$method][$httpMethod] as $regex => $namedSpacedClass) {
+		if (isset($this->config[$method], $this->config[$method][$httpMethod])) {
+			foreach ($this->config[$method][$httpMethod] as $regex => $namedSpacedClass) {
 				if (preg_match($regex, $this->container->request->uri())) {
 					if ($this->trigger($namedSpacedClass, $method) === false) {
 						break; /* break out if false returned */

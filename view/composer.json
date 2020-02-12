@@ -1,0 +1,15 @@
+{
+	"name": "projectorangebox/view",
+	"authors": [{
+		"name": "Don Myers",
+		"email": "donmyers@me.com",
+		"homepage": "https://github.com/ProjectOrangeBox",
+		"role": "Everything"
+	}],
+	"description": "View",
+	"autoload": {
+		"psr-4": {
+			"projectorangebox\\view\\": "src"
+		}
+	}
+}

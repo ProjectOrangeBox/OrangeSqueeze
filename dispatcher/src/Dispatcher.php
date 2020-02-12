@@ -89,20 +89,13 @@ class Dispatcher implements DispatcherInterface
 			$parameters = str_replace('/$' . $key . '/', $value, $parameters);
 		}
 
-		/* Turn on output buffering */
-		ob_start();
 
 		/* call the controller method */
-		\call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')));
+		$output = \call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')));
 
-
-		/* capture the contents of the output buffer */
-		$output = ob_get_contents();
-
-		/* Clean the output buffer and turn off output buffering */
-		ob_end_clean();
-
-		$this->response->append($output);
+		if ($output) {
+			$this->response->append((string) $output);
+		}
 
 		/* middleware output */
 		if ($this->hasMiddleware) {

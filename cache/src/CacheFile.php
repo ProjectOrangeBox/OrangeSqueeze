@@ -7,11 +7,11 @@ class CacheFile implements CacheInterface
 	protected $cachePath = '';
 	protected $ttl;
 
-	public function __construct(string $cachePath, int $ttl)
+	public function __construct(array $config)
 	{
 		/* make cache path ready to use */
-		$this->cachePath = rtrim($cachePath, '/') . '/';
-		$this->ttl = $ttl;
+		$this->cachePath = rtrim($config['path'], '/') . '/';
+		$this->ttl = $config['ttl'] ?? 0;
 
 		\FS::mkdir($this->cachePath);
 	}

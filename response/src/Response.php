@@ -30,7 +30,7 @@ class Response implements ResponseInterface
 	}
 
 	/* echo final output */
-	public function display(string $output = null): void
+	public function display(string $output = null, int $status_code = 0): void
 	{
 		if ($output) {
 			$this->finalOutput = $output;
@@ -38,13 +38,20 @@ class Response implements ResponseInterface
 
 		echo $this->finalOutput;
 
-		$this->exit(0);
+		$this->exit($status_code);
 	}
 
 	/* Set the HTTP response code */
-	public function setRespondsCode(int $code): ResponseInterface
+	public function respondsCode(int $code): ResponseInterface
 	{
 		http_response_code($code);
+
+		return $this;
+	}
+
+	public function contentType(string $mime_type, string $charset = 'UTF-8'): ResponseInterface
+	{
+		$this->header('Content-Type: ' . $mime_type . '; charset=' . $charset);
 
 		return $this;
 	}

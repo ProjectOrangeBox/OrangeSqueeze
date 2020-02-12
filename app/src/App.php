@@ -26,9 +26,6 @@ class App implements AppInterface
 			ini_set('display_errors', 0);
 		}
 
-		/* set the most basic exception handler inside common.php file */
-		set_exception_handler('showException');
-
 		/* Check for this because it's required */
 		if (!\defined('__ROOT__')) {
 			throw new Exception('__ROOT__ not defined.');
@@ -54,6 +51,18 @@ class App implements AppInterface
 		if (FS::file_exists('Bootstrap.php')) {
 			require FS::resolve('Bootstrap.php');
 		}
+
+		/* The common function package must be installed */
+		$commonFunctions = realpath(__DIR__ . '/../../common/common.php');
+
+		if (!file_exists($commonFunctions)) {
+			throw new Exception('The global common functions inside of are required and common.php was file not found at ' . $commonFunctions . '.');
+		}
+
+		require $commonFunctions;
+
+		/* set the most basic exception handler inside common.php file */
+		set_exception_handler('showException');
 
 		/* if there is a env file merge it with the global $_ENV */
 		if (FS::file_exists('.env')) {

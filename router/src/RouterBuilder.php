@@ -2,73 +2,45 @@
 
 namespace projectorangebox\router;
 
-use projectorangebox\cache\CacheInterface;
-
-class RouterBuilder implements RouterBuilderInterface
+class RouterBuilder
 {
-	protected $config = [];
-	protected $routes = [];
-	protected $cache;
-	protected $cacheKey = '';
-	protected $re = '/<(.[^>]*)>/m';
-
-	public function __construct(array $config, string $key, CacheInterface $cache = null)
-	{
-		$this->config = $config;
-
-		$this->config['default'] = $this->config['default'] ?? ['get', 'cli'];
-		$this->config['all'] = $this->config['all'] ?? ['get', 'cli', 'post', 'put', 'delete'];
-
-		$this->routes = $this->config[$key];
-		$this->cacheKey = 'RouterBuilder.' . $key;
-		$this->cache = $cache;
-	}
-
-	public function build(): array
-	{
-		/* are we caching or rebuilding everytime? */
-		if ($this->cache) {
-			if (!$routes = $this->cache->get($this->cacheKey)) {
-				$routes = $this->format($this->routes);
-
-				$this->cache->save($this->cacheKey, $routes);
-			}
-		} else {
-			$routes = $this->format($this->routes);
-		}
-
-		return $routes;
-	}
-
-	protected function format(array $routes): array
+	static public function build(array $config): array
 	{
 		$formatted = [];
 
-		foreach ($routes as $regex => $rewrite) {
-			/* regex passed by reference */
-			$httpMethod = $this->GetMethods($regex);
+		if (is_array($config['routes'])) {
 
-			if (preg_match_all($this->re, $regex, $matches)) {
-				foreach ($matches[0] as $idx => $match) {
-					/* (?<folder>[^/]*) */
-					$regex = str_replace($match, '(?<' . $matches[1][$idx] . '>[^/]*)', $regex);
+			$config['default'] = $config['default'] ?? ['get', 'cli'];
+			$config['all'] = $config['all'] ?? ['get', 'cli', 'post', 'put', 'delete'];
+
+			$re = '/<(.[^>]*)>/m';
+
+			foreach ($config['routes'] as $regex => $rewrite) {
+				/* regex passed by reference */
+				$httpMethod = self::GetMethods($regex, $config['default'], $config['all']);
+
+				if (preg_match_all($re, $regex, $matches)) {
+					foreach ($matches[0] as $idx => $match) {
+						/* (?<folder>[^/]*) */
+						$regex = str_replace($match, '(?<' . $matches[1][$idx] . '>[^/]*)', $regex);
+					}
 				}
-			}
 
-			$regex = '#^/' . ltrim($regex, '/') . '$#im';
+				$regex = '#^/' . ltrim($regex, '/') . '$#im';
 
-			foreach ($httpMethod as $method) {
-				$formatted[$method][$regex] = $rewrite;
+				foreach ($httpMethod as $method) {
+					$formatted[$method][$regex] = $rewrite;
+				}
 			}
 		}
 
 		return $formatted;
 	}
 
-	protected function GetMethods(&$regex): array
+	static protected function GetMethods(&$regex, array $defaults, array $all): array
 	{
 		/* default */
-		$httpMethods = $this->config['default'];
+		$httpMethods = $defaults;
 
 		if ($regex[0] == '@') {
 			$firstSlash = \strpos($regex, '/');
@@ -80,7 +52,7 @@ class RouterBuilder implements RouterBuilderInterface
 				$httpMethods = explode(',', $methods);
 			} else {
 				/* nothing specific supplied */
-				$httpMethods = $this->config['all'];
+				$httpMethods = $all;
 			}
 		}
 

@@ -6,7 +6,7 @@
  * before the App class is instantiated
  */
 
-/* wrapper to get service from container which is attached to the application */
+/* Wrapper */
 if (!function_exists('service')) {
 	function service(string $serviceName = null, \projectorangebox\container\ContainerInterface &$setContainer = null)
 	{
@@ -47,6 +47,55 @@ if (!function_exists('log_message')) {
 	}
 } /* end log_message */
 
+/* Wrapper */
+if (!function_exists('cache')) {
+	function cache(string $cacheKey, Closure $closure, int $ttl = null)
+	{
+		if (!$cached = service('cache')->get($cacheKey)) {
+			$cached = $closure();
+
+			service('cache')->save($cacheKey, $cached, $ttl);
+		}
+
+		return $cached;
+	}
+}
+
+/**
+ * Merge configuration with defaults.
+ * If no value is included for a default key
+ * then it is required and a value must be included in the passed config
+ */
+if (!function_exists('mergeConfig')) {
+	function mergeConfig(array $passedConfig, array $defaults): array
+	{
+		$missing = [];
+
+		foreach ($defaults as $name => $value) {
+			if (\is_integer($name)) {
+				$name = $value;
+				$value = '#NOVALUE#';
+			}
+
+			if (!isset($passedConfig[$name])) {
+				if ($value === '#NOVALUE#') {
+					$missing[$name] = $name;
+				} else {
+					$passedConfig[$name] = $value;
+				}
+			}
+		}
+
+		if (count($missing)) {
+			/* fatal */
+			throw new \Exception('The following configuration values are required and no default was given ' . implode(',', $missing) . ' .');
+		}
+
+		return $passedConfig;
+	}
+}
+
+
 /* The most basic exception handler */
 if (!function_exists('showException')) {
 	function showException($exception): void
@@ -64,6 +113,19 @@ if (!function_exists('showException')) {
 		exit(1);
 	}
 } /* end showException */
+
+/* Get ENV with default */
+if (!function_exists('env')) {
+	function env(string $key, $default = '#NOVALUE#') /* mixed */
+	{
+		if (!isset($_ENV[$key]) && $default === '#NOVALUE#') {
+			throw new \Exception('The environmental variable "' . $key . '" is not set and no default was provided.');
+		}
+
+		return (isset($_ENV[$key])) ? $_ENV[$key] : $default;
+	}
+}
+
 
 /**
  * Add some stateless functions
@@ -119,71 +181,4 @@ function array_sort_by_column(array &$array, string $column, int $dir = SORT_ASC
 	$sortColumn = array_column($array, $column);
 
 	array_multisort($sortColumn, $dir, $array, $flags);
-}
-
-if (!function_exists('env')) {
-	function env(string $key, $default = '#NOVALUE#') /* mixed */
-	{
-		if (!isset($_ENV[$key]) && $default === '#NOVALUE#') {
-			throw new \Exception('The environmental variable "' . $key . '" is not set and no default was provided.');
-		}
-
-		return (isset($_ENV[$key])) ? $_ENV[$key] : $default;
-	}
-}
-
-/**
- * $cached = searchFor('/folder/folder/*.md', 'markdown.plugins', $container->cache),
- * $cached = searchFor('/folder/folder/*.hbs', 'handlebar.templates', $container->cache),
- * $cached = searchFor('/folder/folder/*.php', 'php.templates', $container->cache),
- */
-if (!function_exists('searchFor')) {
-	function searchFor(string $path, string $cacheKey, \projectorangebox\cache\CacheInterface $cache): array
-	{
-		/* build the complete cache key */
-		$cacheKey = 'app.searchFor.' . $cacheKey . '.php';
-
-		if (!$found = $cache->get($cacheKey)) {
-			$pathinfo = \pathinfo($path);
-
-			$stripFromBeginning = $pathinfo['dirname'];
-			$stripLen = \strlen($stripFromBeginning) + 1;
-
-			$extension = $pathinfo['extension'];
-			$extensionLen = \strlen($extension) + 1;
-
-			$found = [];
-
-			foreach (\FS::glob($path, 0, true, true) as $file) {
-				$found[\strtolower(\substr($file, $stripLen, -$extensionLen))] = $file;
-			}
-
-			$cache->save($cacheKey, $found);
-		}
-
-		return $found;
-	}
-}
-
-if (!function_exists('mergeConfig')) {
-	function mergeConfig(array $array, array $defaults): array
-	{
-		foreach ($defaults as $name => $default) {
-			if (\is_integer($name)) {
-				$name = $default;
-				$default = '#NOVALUE#';
-			}
-
-			if (!isset($array[$name])) {
-				if ($default === '#NOVALUE#') {
-					/* fatal */
-					throw new \Exception('Could not locate a configuration value ' . $name . ' and no default was provided.');
-				}
-
-				$array[$name] = $default;
-			}
-		}
-
-		return $array;
-	}
 }
