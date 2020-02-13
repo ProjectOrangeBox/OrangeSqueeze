@@ -6,25 +6,10 @@ class RuleFinder
 {
 	static protected $found = [];
 
-	static public function search($paths)
+	static public function search(array $regexArray)
 	{
-		$files = \FS::glob('/vendor/*', 0, true, true);
-
-		foreach ($files as $file) {
-			if (preg_match('#(.*)/rules/([^/]*).php#', $file)) {
-				self::$found[\strtolower(basename($file, '.php'))] = self::extractNameSpace($file);
-			}
-		}
-
-		return self::$found;
-	}
-
-	static public function filters($paths)
-	{
-		$files = \FS::glob('/vendor/*', 0, true, true);
-
-		foreach ($files as $file) {
-			if (preg_match('#(.*)/filters/([^/]*).php#', $file)) {
+		foreach ($regexArray as $regex) {
+			foreach (\FS::regexGlob(__ROOT__, $regex) as $file) {
 				self::$found[\strtolower(basename($file, '.php'))] = self::extractNameSpace($file);
 			}
 		}

@@ -101,6 +101,17 @@ class FS
 		return $files;
 	}
 
+	static public function regexGlob(string $path, string $regex): array
+	{
+		$found = [];
+
+		foreach (new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator(self::resolve($path))), '#' . str_replace('#', '\#', $regex) . '#', RecursiveRegexIterator::GET_MATCH) as $match) {
+			$found[] = self::resolve($match[0], true);
+		}
+
+		return $found;
+	}
+
 	/**
 	 * Reads entire file into a string
 	 *
