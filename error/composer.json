@@ -10,6 +10,7 @@
 	"autoload": {
 		"psr-4": {
 			"projectorangebox\\error\\": "src"
-		}
+		},
+		"files": ["src/common.php"]
 	}
 }

@@ -52,15 +52,6 @@ class App implements AppInterface
 			require FS::resolve('Bootstrap.php');
 		}
 
-		/* The common function package must be installed */
-		$commonFunctions = realpath(__DIR__ . '/../../common/common.php');
-
-		if (!file_exists($commonFunctions)) {
-			throw new Exception('The global common functions inside of are required and common.php was file not found at ' . $commonFunctions . '.');
-		}
-
-		require $commonFunctions;
-
 		/* set the most basic exception handler inside common.php file */
 		set_exception_handler('showException');
 

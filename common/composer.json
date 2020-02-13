@@ -6,5 +6,8 @@
 		"homepage": "https://github.com/ProjectOrangeBox/microcms",
 		"role": "Everything"
 	}],
-	"description": "projectorangebox common functions"
+	"description": "projectorangebox common functions",
+	"autoload": {
+		"files": ["src/common.php"]
+	}
 }

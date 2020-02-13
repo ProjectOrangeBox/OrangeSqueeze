@@ -127,6 +127,13 @@ class Request implements RequestInterface
 		}
 	}
 
+	public function setRequest(string $name, $value): RequestInterface
+	{
+		$this->request[$name] = $value;
+
+		return $this;
+	}
+
 	/* get a get request value with default */
 	public function get(string $name = null, $default = null) /* mixed */
 	{

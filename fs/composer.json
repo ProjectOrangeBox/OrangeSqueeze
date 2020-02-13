@@ -9,7 +9,7 @@
 	"description": "projectorangebox file system abstract",
 	"autoload": {
 		"classmap": [
-			"FS.php"
+			"src/FS.php"
 		]
 	}
 }

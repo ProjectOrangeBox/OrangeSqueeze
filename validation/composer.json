@@ -1,0 +1,16 @@
+{
+	"name": "projectorangebox/validation",
+	"authors": [{
+		"name": "Don Myers",
+		"email": "donmyers@me.com",
+		"homepage": "https://github.com/ProjectOrangeBox",
+		"role": "Everything"
+	}],
+	"description": "Validation",
+	"autoload": {
+		"psr-4": {
+			"projectorangebox\\validation\\": "src"
+		},
+		"files": ["src/common.php"]
+	}
+}
