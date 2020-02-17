@@ -2,6 +2,7 @@
 
 namespace projectorangebox\notify;
 
+use Exception;
 use projectorangebox\session\Session;
 
 class Notify implements NotifyInterface
@@ -18,21 +19,26 @@ class Notify implements NotifyInterface
 			'key' => 'notify::key',
 			'default status' => 'warn',
 			'site url' => '',
-			'default as' => 'json',
+			'as' => 'json',
 		];
 
 		$this->config = array_merge($defaults, $this->config);
 
+		$this->as($this->config['as']);
+
 		$this->sessionService = $sessionService;
 	}
 
-	public function add(string $msg, string $status = null, array $extra = []): NotifyInterface
+	public function add(string $msg, string $status = null, array $payload = []): NotifyInterface
 	{
 		$status = $status ?? $this->config['default status'];
 
 		$current = $this->sessionService->get($this->config['key'], []);
 
-		$current[$msg . $status] = ['msg' => $msg, 'status' => $status, 'extra' => $extra];
+		$payload['msg'] = $msg;
+		$payload['status'] = $status;
+
+		$current[$msg . $status] = $payload;
 
 		$this->sessionService->set($this->config['key'], $current);
 
@@ -85,7 +91,11 @@ class Notify implements NotifyInterface
 
 	public function as(string $as): NotifyInterface
 	{
-		$this->config['default as'] = $as;
+		if (!\in_array($as, ['debug', 'array', 'json', 'html'])) {
+			throw new Exception('Unsupport Notify response type "' . $as . '".');
+		}
+
+		$this->config['as'] = \ucfirst(\strtolower($as));
 
 		return $this;
 	}
@@ -99,7 +109,7 @@ class Notify implements NotifyInterface
 
 	public function get(string $param = null)
 	{
-		$as = 'as' . \ucfirst(\strtolower($this->config['default as']));
+		$as = 'as' . $this->config['as'];
 
 		return ($param) ? $this->$as($param) : $this->$as();
 	}
