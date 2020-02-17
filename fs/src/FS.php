@@ -101,12 +101,17 @@ class FS
 		return $files;
 	}
 
-	static public function regexGlob(string $path, string $regex): array
+	static public function regexGlob(string $regex): array
 	{
 		$found = [];
 
-		foreach (new RegexIterator(new RecursiveIteratorIterator(new RecursiveDirectoryIterator(self::resolve($path))), '#' . str_replace('#', '\#', $regex) . '#', RecursiveRegexIterator::GET_MATCH) as $match) {
-			$found[] = self::resolve($match[0], true);
+		$mark = '%';
+		$regex = $mark . str_replace($mark, '\\' . $mark, $regex) . $mark . 'm';
+
+		foreach (new RecursiveIteratorIterator(new RecursiveDirectoryIterator(self::resolve(''))) as $match) {
+			if (preg_match($regex, $match->getPathname(), $matches)) {
+				$found[] = $matches;
+			}
 		}
 
 		return $found;

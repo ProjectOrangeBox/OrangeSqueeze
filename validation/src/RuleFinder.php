@@ -6,11 +6,11 @@ class RuleFinder
 {
 	static protected $found = [];
 
-	static public function search(array $regexArray)
+	static public function search(array $regexPaths)
 	{
-		foreach ($regexArray as $regex) {
-			foreach (\FS::regexGlob(__ROOT__, $regex) as $file) {
-				self::$found[\strtolower(basename($file, '.php'))] = self::extractNameSpace($file);
+		foreach ($regexPaths as $regex) {
+			foreach (\FS::regexGlob($regex) as $match) {
+				self::$found[\strtolower($match['key'])] = self::extractNameSpace($match[0]);
 			}
 		}
 

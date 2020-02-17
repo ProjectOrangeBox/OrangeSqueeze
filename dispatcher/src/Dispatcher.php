@@ -15,6 +15,10 @@ class Dispatcher implements DispatcherInterface
 	protected $router;
 	protected $middleware;
 
+	/* get AFTER construct */
+	protected $captured = [];
+	protected $segments = [];
+
 	public function __construct(ContainerInterface $container)
 	{
 		/* This is injected into the controller constructor */
@@ -42,8 +46,9 @@ class Dispatcher implements DispatcherInterface
 		$httpMethod = $this->request->requestMethod();
 		$uri = $this->request->uri();
 		$matched = $this->router->handle($uri, $httpMethod);
-		$captured = $this->router->captured();
-		$segments = explode('/', $uri);
+
+		$this->captured = $this->router->captured();
+		$this->segments = explode('/', $uri);
 
 		/* middleware input */
 		if ($this->hasMiddleware) {
@@ -71,24 +76,15 @@ class Dispatcher implements DispatcherInterface
 		/* create a instance of the controller class and inject the container */
 		$controller = new $namespaceClass($this->container);
 
+		$method = $this->replace($method);
+
 		if (!\method_exists($controller, $method)) {
 			/* throw low level error */
 			throw new Exception('Method "' . $method . '" on "' . $namespaceClass . '" not found.');
 		}
 
 		/* format the parameters */
-		$parameters = '/' . trim($parameters, '/') . '/';
-
-		/* segments $Seg1, $Seg2, $Seg3... */
-		foreach ($segments as $index => $value) {
-			$parameters = str_replace('/$Seg' . ($index + 1) . '/', $value, $parameters);
-		}
-
-		/* regular expression captured values $cat, $dog, $orderid, $month, $date */
-		foreach ($captured as $key => $value) {
-			$parameters = str_replace('/$' . $key . '/', $value, $parameters);
-		}
-
+		$parameters = $this->replace($parameters);
 
 		/* call the controller method */
 		$output = \call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')));
@@ -104,5 +100,20 @@ class Dispatcher implements DispatcherInterface
 		}
 
 		$this->response->display();
+	}
+
+	protected function replace(string $string): string
+	{
+		/* segments $Seg1, $Seg2, $Seg3... */
+		foreach ($this->segments as $index => $value) {
+			$string = str_replace('$Seg' . ($index + 1), $value, $string);
+		}
+
+		/* regular expression captured values $cat, $dog, $orderid, $month, $date */
+		foreach ($this->captured as $key => $value) {
+			$string = str_replace('$' . $key, $value, $string);
+		}
+
+		return $string;
 	}
 } /* end class */

@@ -6,27 +6,14 @@ class ViewFinder
 {
 	static protected $found = [];
 
-	static public function search($paths)
+	static public function search($regexPaths)
 	{
-		foreach ((array) $paths as $path) {
-			self::_search($path);
+		foreach ($regexPaths as $regex) {
+			foreach (\FS::regexGlob($regex) as $match) {
+				self::$found[$match['key']] = $match[0];
+			}
 		}
 
 		return self::$found;
-	}
-
-	static public function _search(string $path): void
-	{
-		$pathinfo = \pathinfo($path);
-
-		$stripFromBeginning = $pathinfo['dirname'];
-		$stripLen = \strlen($stripFromBeginning) + 1;
-
-		$extension = $pathinfo['extension'];
-		$extensionLen = \strlen($extension) + 1;
-
-		foreach (\FS::glob($path, 0, true, true) as $file) {
-			self::$found[\strtolower(\substr($file, $stripLen, -$extensionLen))] = $file;
-		}
 	}
 }
