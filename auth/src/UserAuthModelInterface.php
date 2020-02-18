@@ -2,7 +2,7 @@
 
 namespace projectorangebox\auth;
 
-interface UserModelInterface
+interface UserAuthModelInterface
 {
 	public function __construct(array $config);
 	public function get(int $userId);

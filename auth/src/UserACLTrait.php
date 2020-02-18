@@ -2,7 +2,6 @@
 
 namespace projectorangebox\auth;
 
-use projectorangebox\auth\UserModel;
 use Exception;
 
 trait UserACLTrait
@@ -16,11 +15,11 @@ trait UserACLTrait
 
 	public function UserACLConstruct()
 	{
-		$userModelClass = $this->config['User Model Class'] ?? '\projectorangebox\auth\UserModel';
+		$userModelClass = $this->config['User Model Class'] ?? '\projectorangebox\auth\UserAuthModel';
 
 		$this->userModel = new $userModelClass($this->config);
 
-		if (!($this->userModel instanceof userModelInterface)) {
+		if (!($this->userModel instanceof UserAuthModelInterface)) {
 			throw new Exception('User Model is not an instance of userModelInterface.');
 		}
 	}
