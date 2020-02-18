@@ -5,7 +5,7 @@ namespace projectorangebox\auth;
 interface UserInterface
 {
 	public function __construct(array $config);
-	public function set(int $userId, bool $save = true): bool;
+	public function setUserId(int $userId): bool;
 
 	public function UserACLConstruct();
 	public function roles(): array;
@@ -26,8 +26,10 @@ interface UserInterface
 	public function UserSessionConstruct();
 	public function error(): string;
 	public function has(): bool;
+
 	public function save(): bool;
-	public function restore(): bool;
+	public function retrieve(): bool;
+
 	public function login(string $login, string $password): bool;
 	public function logout(): bool;
 	public function refresh(): bool;

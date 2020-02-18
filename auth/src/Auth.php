@@ -22,7 +22,9 @@ class Auth implements AuthInterface
 
 		$this->clear();
 
-		$this->userModel = new UserModel($config);
+		$userModelClass = $this->config['User Model Class'] ?? '\projectorangebox\auth\UserModel';
+
+		$this->userModel = new $userModelClass($config);
 
 		if (!($this->userModel instanceof userModelInterface)) {
 			throw new Exception('User Model is not an instance of userModelInterface.');

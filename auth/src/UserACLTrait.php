@@ -16,7 +16,9 @@ trait UserACLTrait
 
 	public function UserACLConstruct()
 	{
-		$this->userModel = new UserModel($this->config);
+		$userModelClass = $this->config['User Model Class'] ?? '\projectorangebox\auth\UserModel';
+
+		$this->userModel = new $userModelClass($this->config);
 
 		if (!($this->userModel instanceof userModelInterface)) {
 			throw new Exception('User Model is not an instance of userModelInterface.');

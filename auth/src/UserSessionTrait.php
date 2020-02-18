@@ -10,7 +10,6 @@ trait UserSessionTrait
 	protected $sessionService;
 	protected $sessionKey = 'user::id';
 	protected $authLibrary;
-	protected $error = '';
 
 	public function UserSessionConstruct()
 	{
@@ -29,18 +28,18 @@ trait UserSessionTrait
 			throw new Exception('Auth Library is not a instance of AuthInterface');
 		}
 
-		/* restore session */
-		$this->restore();
+		/* try to restore session */
+		$this->retrieve();
 	}
 
 	public function error(): string
 	{
-		return $this->error;
+		return $this->authLibrary->error();
 	}
 
 	public function has(): bool
 	{
-		return !empty($this->error);
+		return $this->authLibrary->has();
 	}
 
 	public function save(): bool
@@ -54,13 +53,13 @@ trait UserSessionTrait
 		return true;
 	}
 
-	public function restore(): bool
+	public function retrieve(): bool
 	{
 		$savedUserId = $this->sessionService->get($this->sessionKey, null);
 
 		$userId = ((int) $savedUserId > 0) ? (int) $savedUserId : (int) $this->config['guest user'];
 
-		$this->set($userId, false);
+		$this->setUserId($userId);
 
 		return true;
 	}
@@ -70,9 +69,7 @@ trait UserSessionTrait
 		$success = $this->authLibrary->login($login, $password);
 
 		if ($success) {
-			$this->set($this->authLibrary->userId());
-		} else {
-			$this->error = $this->authLibrary->error();
+			$this->setUserId($this->authLibrary->userId());
 		}
 
 		return $success;
@@ -87,8 +84,6 @@ trait UserSessionTrait
 			$this->sessionService->delete($this->sessionKey);
 
 			$this->set($this->config['guest user'], true);
-		} else {
-			$this->error = $this->authLibrary->error();
 		}
 
 		return $success;
@@ -100,8 +95,6 @@ trait UserSessionTrait
 
 		if ($success) {
 			$this->lazyLoaded = false;
-		} else {
-			$this->error = $this->authLibrary->error();
 		}
 
 		return $success;

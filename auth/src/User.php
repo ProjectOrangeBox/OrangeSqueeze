@@ -27,15 +27,13 @@ class User implements UserInterface
 		$this->UserSessionConstruct($config);
 	}
 
-	public function set(int $userId, bool $save = true): bool
+	public function setUserId(int $userId): bool
 	{
 		$this->id = $userId;
 
 		$this->refresh();
 
-		if ($save) {
-			$this->save();
-		}
+		$this->save();
 
 		return true;
 	}
