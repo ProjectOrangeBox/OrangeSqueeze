@@ -3,7 +3,7 @@
 namespace projectorangebox\notify;
 
 use Exception;
-use projectorangebox\session\Session;
+use projectorangebox\session\SessionInterface;
 
 class Notify implements NotifyInterface
 {
@@ -11,7 +11,7 @@ class Notify implements NotifyInterface
 
 	protected $keep = false;
 
-	public function __construct(array $config, Session $sessionService)
+	public function __construct(array $config, SessionInterface $sessionService)
 	{
 		$this->config = $config;
 

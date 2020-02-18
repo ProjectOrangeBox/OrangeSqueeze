@@ -2,11 +2,11 @@
 
 namespace projectorangebox\notify;
 
-use projectorangebox\session\Session;
+use projectorangebox\session\SessionInterface;
 
 interface NotifyInterface
 {
-	public function __construct(array $config, Session $sessionService);
+	public function __construct(array $config, SessionInterface $sessionService);
 	public function clear(): NotifyInterface;
 	public function add(string $msg, string $status = null, array $payload = []): NotifyInterface;
 	public function as(string $as): NotifyInterface;

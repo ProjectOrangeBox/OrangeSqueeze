@@ -2,9 +2,14 @@
 
 namespace projectorangebox\session;
 
+use FS;
 use Exception;
+use ArrayAccess;
+use Countable;
+use IteratorAggregate;
+use projectorangebox\session\SessionInterface;
 
-class Session implements \ArrayAccess, \Countable, \IteratorAggregate
+class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInterface
 {
 	protected $config = [];
 
@@ -60,7 +65,7 @@ class Session implements \ArrayAccess, \Countable, \IteratorAggregate
 			$name = $this->config['name'];
 
 			if (isset($this->config['session save path'])) {
-				session_save_path(\FS::resolve($this->config['session save path']));
+				session_save_path(FS::resolve($this->config['session save path']));
 			}
 
 			session_set_cookie_params($this->config['lifetime'], $this->config['path'], $this->config['domain'], $this->config['secure'], $this->config['httponly']);
@@ -140,7 +145,7 @@ class Session implements \ArrayAccess, \Countable, \IteratorAggregate
 		return array_key_exists($key, $_SESSION);
 	}
 
-	public static function id($new = false)
+	public function id($new = false)
 	{
 		if ($new && session_id()) {
 			session_regenerate_id(true);
