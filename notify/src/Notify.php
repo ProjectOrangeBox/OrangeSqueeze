@@ -52,43 +52,6 @@ class Notify implements NotifyInterface
 		return $this;
 	}
 
-	public function asArray(): array
-	{
-		return $this->_get();
-	}
-
-	public function asJson(): string
-	{
-		return \json_encode($this->asArray());
-	}
-
-	public function asHtml(string $format = '<div class="notify notify-{status}">{msg}</div>'): string
-	{
-		$html = '';
-
-		foreach ($this->asArray() as $record) {
-			$line = $format;
-
-			/* simple merge */
-			foreach ($record as $key => $value) {
-				$line = str_replace('{' . $key . '}', $value, $line);
-			}
-
-			$html .= $line . PHP_EOL;
-		}
-
-		return $html;
-	}
-
-	public function asDebug(): string
-	{
-		ob_start();
-
-		var_dump($this->asArray());
-
-		return ob_get_clean();
-	}
-
 	public function as(string $as): NotifyInterface
 	{
 		if (!\in_array($as, ['debug', 'array', 'json', 'html'])) {
@@ -112,19 +75,6 @@ class Notify implements NotifyInterface
 		$as = 'as' . $this->config['as'];
 
 		return ($param) ? $this->$as($param) : $this->$as();
-	}
-
-	protected function _get(): array
-	{
-		$current = array_values($this->sessionService->get($this->config['key'], []));
-
-		if (!$this->keep) {
-			$this->clear();
-
-			$this->keep = false;
-		}
-
-		return $current;
 	}
 
 	public function redirect(string $uri = '', string $method = 'auto', int $code = NULL): void
@@ -156,4 +106,56 @@ class Notify implements NotifyInterface
 
 		exit($code - 200);
 	}
-}
+
+	/* protected */
+
+	protected function asArray(): array
+	{
+		return $this->_get();
+	}
+
+	protected function asJson(): string
+	{
+		return \json_encode($this->asArray());
+	}
+
+	protected function asHtml(string $format = '<div class="notify notify-{status}">{msg}</div>'): string
+	{
+		$html = '';
+
+		foreach ($this->asArray() as $record) {
+			$line = $format;
+
+			/* simple merge */
+			foreach ($record as $key => $value) {
+				$line = str_replace('{' . $key . '}', $value, $line);
+			}
+
+			$html .= $line . PHP_EOL;
+		}
+
+		return $html;
+	}
+
+	protected function asDebug(): string
+	{
+		ob_start();
+
+		var_dump($this->asArray());
+
+		return ob_get_clean();
+	}
+
+	protected function _get(): array
+	{
+		$current = array_values($this->sessionService->get($this->config['key'], []));
+
+		if (!$this->keep) {
+			$this->clear();
+
+			$this->keep = false;
+		}
+
+		return $current;
+	}
+} /* end class */
