@@ -2,7 +2,7 @@
 
 namespace projectorangebox\auth;
 
-use projectorangebox\app\DatabaseModel;
+use projectorangebox\common\DatabaseModel;
 
 class RoleModel extends DatabaseModel
 {

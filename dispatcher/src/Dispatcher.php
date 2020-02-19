@@ -4,16 +4,16 @@ namespace projectorangebox\dispatcher;
 
 use Exception;
 use projectorangebox\container\ContainerInterface;
-use projectorangebox\middleware\MiddlewareInterface;
+use projectorangebox\middleware\handler\MiddlewareInterface;
 
 class Dispatcher implements DispatcherInterface
 {
 	protected $container;
-	protected $hasMiddleware;
 	protected $request;
 	protected $response;
 	protected $router;
-	protected $middleware;
+	protected $hasMiddlewareHandlerService;
+	protected $middlewareHandlerService;
 
 	/* get AFTER construct */
 	protected $captured = [];
@@ -29,12 +29,12 @@ class Dispatcher implements DispatcherInterface
 		$this->response = $container->response;
 
 		/* test once */
-		if ($this->hasMiddleware = $container->has('middleware')) {
+		if ($this->hasMiddlewareHandlerService = $container->has('middleware')) {
 			if ($container->middleware instanceof MiddlewareInterface) {
-				$this->middleware = $container->middleware;
+				$this->middlewareHandlerService = $container->middleware;
 			} else {
 				/* throw fatal low level error */
-				throw new Exception('Middleware attached to the container is not a instance of MiddlewareInterface.');
+				throw new Exception('Middleware attached to the container is not a instance of handler\MiddlewareInterface.');
 			}
 		}
 	}
@@ -51,9 +51,9 @@ class Dispatcher implements DispatcherInterface
 		$this->segments = explode('/', $uri);
 
 		/* middleware input */
-		if ($this->hasMiddleware) {
+		if ($this->hasMiddlewareHandlerService) {
 			/* passed by reference */
-			$this->middleware->request($this->container);
+			$this->middlewareHandlerService->request();
 		}
 
 		if (is_array($matched)) {
@@ -94,9 +94,9 @@ class Dispatcher implements DispatcherInterface
 		}
 
 		/* middleware output */
-		if ($this->hasMiddleware) {
+		if ($this->hasMiddlewareHandlerService) {
 			/* passed by reference */
-			$this->middleware->response($this->container);
+			$this->middlewareHandlerService->response();
 		}
 
 		$this->response->display();

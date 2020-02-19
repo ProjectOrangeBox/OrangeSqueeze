@@ -4,7 +4,6 @@ namespace projectorangebox\error;
 
 use Exception;
 use projectorangebox\view\ViewInterface;
-use projectorangebox\error\ErrorsEchoResponse;
 use projectorangebox\response\ResponseInterface;
 
 class Errors implements ErrorsInterface
@@ -25,7 +24,7 @@ class Errors implements ErrorsInterface
 	protected $exitStatus = 0;
 	protected $statusCode = 0;
 
-	public function __construct(array $config, ViewInterface $viewService, ResponseInterface $responseService = null)
+	public function __construct(array $config, ViewInterface $viewService, ResponseInterface $responseService)
 	{
 		$this->group = $this->config['group'] ?? $this->group; /* default group */
 		$this->viewPrefix = $config['view prefix'] ?? $this->viewPrefix; /* view key prefix */
@@ -34,9 +33,7 @@ class Errors implements ErrorsInterface
 		$this->contentType = $config['content type'] ?? $this->contentType; /* output content type */
 
 		$this->viewService = $viewService;
-
-		/* ours or the service */
-		$this->responseService = $responseService ?? new ErrorsEchoResponse;
+		$this->responseService = $responseService;
 	}
 
 	public function setGroup(string $group): ErrorsInterface

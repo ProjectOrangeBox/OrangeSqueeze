@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\middleware;
+namespace projectorangebox\middleware\handler;
 
 use projectorangebox\container\ContainerInterface;
 

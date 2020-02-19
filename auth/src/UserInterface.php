@@ -7,7 +7,7 @@ interface UserInterface
 	public function __construct(array $config);
 	public function setUserId(int $userId): bool;
 
-	public function UserACLConstruct();
+	public function UserACLTraitConstruct();
 	public function roles(): array;
 	public function hasRole(int $role): bool;
 	public function hasRoles(array $roles): bool;
@@ -23,7 +23,7 @@ interface UserInterface
 	public function loggedIn(): bool;
 	public function isAdmin(): bool;
 
-	public function UserSessionConstruct();
+	public function UserSessionTraitConstruct();
 	public function error(): string;
 	public function has(): bool;
 

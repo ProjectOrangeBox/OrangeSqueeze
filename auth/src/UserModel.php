@@ -2,7 +2,7 @@
 
 namespace projectorangebox\auth;
 
-use projectorangebox\app\DatabaseModel;
+use projectorangebox\common\DatabaseModel;
 
 class UserModel extends DatabaseModel
 {

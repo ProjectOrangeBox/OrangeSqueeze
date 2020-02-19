@@ -1,15 +1,13 @@
 <?php
 
-namespace projectorangebox\app;
-
-use Medoo\Medoo;
+namespace projectorangebox\common;
 
 class DatabaseModel
 {
 	protected $db;
 	protected $table;
 
-	public function __construct(Medoo $db)
+	public function __construct($db)
 	{
 		$this->db = $db;
 

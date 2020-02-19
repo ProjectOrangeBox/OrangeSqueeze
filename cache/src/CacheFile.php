@@ -16,7 +16,7 @@ class CacheFile implements CacheInterface
 		\FS::mkdir($this->cachePath);
 	}
 
-	public function get(string $key)
+	public function get(string $key) /* mixed */
 	{
 		\log_message('info', 'Cache Get ' . $key);
 
@@ -57,7 +57,7 @@ class CacheFile implements CacheInterface
 		return $metaData;
 	}
 
-	public function save(string $key, $value, int $ttl = null)
+	public function save(string $key, $value, int $ttl = null): bool
 	{
 		\log_message('info', 'Cache Save ' . $key);
 
@@ -77,7 +77,7 @@ class CacheFile implements CacheInterface
 		];
 	}
 
-	public function delete(string $key)
+	public function delete(string $key): bool
 	{
 		\log_message('info', 'Cache Delete ' . $key);
 
@@ -86,6 +86,8 @@ class CacheFile implements CacheInterface
 		if (\FS::file_exists($file)) {
 			\FS::unlink($file);
 		}
+
+		return true;
 	}
 
 	public function cache_info(): array
@@ -99,11 +101,13 @@ class CacheFile implements CacheInterface
 		return $keys;
 	}
 
-	public function clean(): void
+	public function clean(): bool
 	{
 		foreach (\FS::glob($this->cachePath . '*') as $path) {
 			self::delete($path);
 		}
+
+		return true;
 	}
 
 	public function ttl(int $cacheTTL = null, bool $useWindow = true): int

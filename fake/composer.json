@@ -1,15 +1,15 @@
 {
-	"name": "projectorangebox/middleware",
+	"name": "projectorangebox/fake",
 	"authors": [{
 		"name": "Don Myers",
 		"email": "donmyers@me.com",
 		"homepage": "https://github.com/ProjectOrangeBox",
 		"role": "Everything"
 	}],
-	"description": "Middleware",
+	"description": "Fake",
 	"autoload": {
 		"psr-4": {
-			"projectorangebox\\middleware\\": "src"
+			"projectorangebox\\fake\\": "src"
 		}
 	}
 }

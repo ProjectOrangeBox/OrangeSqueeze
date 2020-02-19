@@ -4,7 +4,6 @@ namespace projectorangebox\auth;
 
 use Exception;
 use Medoo\Medoo;
-use projectorangebox\app\DatabaseModel;
 
 class UserAuthModel implements UserAuthModelInterface
 {

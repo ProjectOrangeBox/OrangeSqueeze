@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\app;
+namespace projectorangebox\common;
 
 use projectorangebox\container\ContainerInterface;
 

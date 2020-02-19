@@ -11,7 +11,7 @@ trait UserSessionTrait
 	protected $sessionKey = 'user::id';
 	protected $authLibrary;
 
-	public function UserSessionConstruct()
+	public function UserSessionTraitConstruct()
 	{
 		$this->sessionService = $this->config['sessionService'];
 
@@ -44,11 +44,7 @@ trait UserSessionTrait
 
 	public function save(): bool
 	{
-		if ($this->loggedIn()) {
-			$this->sessionService->set($this->sessionKey, $this->id);
-		} else {
-			$this->sessionService->delete($this->sessionKey);
-		}
+		$this->sessionService->set($this->sessionKey, $this->id);
 
 		return true;
 	}
@@ -83,7 +79,7 @@ trait UserSessionTrait
 			/* remove there session and make them a everyone */
 			$this->sessionService->delete($this->sessionKey);
 
-			$this->set($this->config['guest user'], true);
+			$this->setUserId($this->config['guest user'], true);
 		}
 
 		return $success;

@@ -1,8 +1,8 @@
 <?php
 
-use projectorangebox\container\ContainerInterface;
+namespace projectorangebox\middleware;
 
 interface MiddlewareRequestInterface
 {
-	public function request(ContainerInterface &$container): void;
+	public function request(): void;
 }

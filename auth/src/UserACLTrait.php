@@ -13,7 +13,7 @@ trait UserACLTrait
 
 	protected $userModel;
 
-	public function UserACLConstruct()
+	public function UserACLTraitConstruct()
 	{
 		$userModelClass = $this->config['User Model Class'] ?? '\projectorangebox\auth\UserAuthModel';
 
