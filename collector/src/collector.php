@@ -3,6 +3,7 @@
 namespace projectorangebox\collector;
 
 use ArgumentCountError;
+use Exception;
 use projectorangebox\session\SessionInterface;
 use projectorangebox\collector\collectorInterface;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
@@ -38,12 +39,18 @@ class collector implements collectorInterface
 
 	protected $flashKey = 'flashdata::';
 
+	protected $persistenceSupported = false;
+
 	public function __construct(array $config)
 	{
-		$this->sessionService = $config['session service'];
+		if (isset($config['session service'])) {
+			$this->sessionService = $config['session service'];
 
-		if (!($this->sessionService instanceof SessionInterface)) {
-			throw new IncorrectInterfaceException('SessionInterface');
+			if (!($this->sessionService instanceof SessionInterface)) {
+				throw new IncorrectInterfaceException('SessionInterface');
+			}
+
+			$this->persistenceSupported = true;
 		}
 	}
 
@@ -105,7 +112,11 @@ class collector implements collectorInterface
 			$this->_add($key, $context);
 
 			if ($persist) {
-				$this->sessionService->set($this->flashKey . $key, $this->collection[$key]);
+				if ($this->persistenceSupported) {
+					$this->sessionService->set($this->flashKey . $key, $this->collection[$key]);
+				} else {
+					throw new Exception('Session not supplied to collector so presistence is not supported.');
+				}
 			}
 		}
 
@@ -131,12 +142,14 @@ class collector implements collectorInterface
 		}
 
 		/* flush persistent? */
-		if (!$persist) {
-			$flashKeyStrLen = strlen($this->flashKey);
+		if ($this->persistenceSupported) {
+			if (!$persist) {
+				$flashKeyStrLen = strlen($this->flashKey);
 
-			foreach ($this->sessionService as $key => $value) {
-				if (substr($key, 0, $flashKeyStrLen) == $this->flashKey) {
-					$this->sessionService->delete($key);
+				foreach ($this->sessionService as $key => $value) {
+					if (substr($key, 0, $flashKeyStrLen) == $this->flashKey) {
+						$this->sessionService->delete($key);
+					}
 				}
 			}
 		}
@@ -164,7 +177,9 @@ class collector implements collectorInterface
 		foreach ($this->keys2Array($keys) as $key) {
 			unset($this->collection[$key]);
 			unset($this->keyCount[$key]);
-			$this->sessionService->delete($this->flashKey . $key);
+			if ($this->persistenceSupported) {
+				$this->sessionService->delete($this->flashKey . $key);
+			}
 		}
 
 		return $this;
