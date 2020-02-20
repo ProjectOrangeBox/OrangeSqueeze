@@ -7,17 +7,16 @@ use Exception;
 
 class quickResponse implements quickResponseInterface
 {
-	protected $contentType;
-	protected $view;
+	protected $contentType = 'text/html';
 	protected $exitStatus = 0;
-	protected $statusCode = 500;
+	protected $statusCode = 200;
 	protected $viewFolder = '';
 
 	public function __construct(array $config)
 	{
+		$this->views = $config['views'];
 		$this->viewFolder = '/' . trim($config['view prefix'], '/') . '/';
 		$this->type($config['type']);
-		$this->views = $config['views'];
 	}
 
 	public function header(int $statusCode, string $type): quickResponseInterface
@@ -31,6 +30,7 @@ class quickResponse implements quickResponseInterface
 			'ajax' => 'application/json',
 			'json' => 'application/json',
 			'html' => 'text/html',
+			'cli' => 'text/html',
 		];
 
 		if (!isset($map[$type])) {
@@ -53,29 +53,22 @@ class quickResponse implements quickResponseInterface
 			$this->exitStatus = 1;
 		}
 
-		if ($this->view == null) {
-			$this->view = $this->statusCode;
+		return $this;
+	}
+
+	public function format(array $array = [], string $view = null): string
+	{
+		$view = trim($this->viewFolder . ($view ?? $this->statusCode), '/');
+
+		if (!\array_key_exists($view, $this->views)) {
+			throw new Exception('Format File Not Found.');
 		}
 
-		return $this;
+		return $this->_view($this->views[$view], $array);
 	}
 
-	public function view(string $view): quickResponseInterface
+	public function display(array $array = [], string $view = null): void
 	{
-		$this->view = $view;
-
-		return $this;
-	}
-
-	public function format(array $array, string $view = null): string
-	{
-		return $this->_view($this->findView($view), $array);
-	}
-
-	public function display(array $array, string $view = null): void
-	{
-		$format = $this->_view($this->findView($view), $array);
-
 		if ($this->contentType) {
 			header("Content-type: " . $this->contentType . '; charset=UTF-8');
 		}
@@ -84,20 +77,9 @@ class quickResponse implements quickResponseInterface
 			http_response_code($this->statusCode);
 		}
 
-		echo $format;
+		echo $this->format($array, $view);
 
 		exit($this->exitStatus);
-	}
-
-	protected function findView(string $view = null): string
-	{
-		$view = trim($this->viewFolder . ($view ?? $this->view), '/');
-
-		if (!\array_key_exists($view, $this->views)) {
-			throw new Exception('Format File Not Found.');
-		}
-
-		return $this->views[$view];
 	}
 
 	protected function _view(string $_mvc_view_name, array $_mvc_view_data = []): string

@@ -3,6 +3,9 @@
 namespace projectorangebox\collector;
 
 use ArgumentCountError;
+use projectorangebox\session\SessionInterface;
+use projectorangebox\collector\collectorInterface;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class collector implements collectorInterface
 {
@@ -31,6 +34,19 @@ class collector implements collectorInterface
 	 */
 	protected $keyCount = [];
 
+	protected $sessionService;
+
+	protected $flashKey = 'flashdata::';
+
+	public function __construct(array $config)
+	{
+		$this->sessionService = $config['session service'];
+
+		if (!($this->sessionService instanceof SessionInterface)) {
+			throw new IncorrectInterfaceException('SessionInterface');
+		}
+	}
+
 	/**
 	 * __call
 	 *
@@ -46,7 +62,9 @@ class collector implements collectorInterface
 			throw new ArgumentCountError('Context Required.');
 		}
 
-		return $this->add($key, $arguments[0]);
+		$persist = isset($arguments[1]) ? (bool) $arguments[1] : false;
+
+		return $this->add($key, $arguments[0], $persist);
 	}
 
 	/**
@@ -67,6 +85,7 @@ class collector implements collectorInterface
 			'collection' => $this->collection,
 			'keyCount' => $this->keyCount,
 			'duplicateKeys' => array_keys($this->duplicateKeys),
+			'flashKey' => $this->flashKey,
 		];
 	}
 
@@ -78,12 +97,16 @@ class collector implements collectorInterface
 	 * @param mixed array
 	 * @return void
 	 */
-	public function add(string $key, $context): collectorInterface
+	public function add(string $key, $context, bool $persist = false): collectorInterface
 	{
 		$hashKey = md5($key . '@' . json_encode($context));
 
 		if (!array_key_exists($hashKey, $this->duplicateKeys)) {
 			$this->_add($key, $context);
+
+			if ($persist) {
+				$this->sessionService->set($this->flashKey . $key, $this->collection[$key]);
+			}
 		}
 
 		$this->duplicateKeys[$hashKey] = true;
@@ -97,20 +120,23 @@ class collector implements collectorInterface
 	 * @param mixed $keys
 	 * @return void
 	 */
-	public function collect($keys = null)
+	public function collect($keys = null, bool $persist = false)
 	{
 		$collected = [];
 
-		if ($keys === null) {
-			$collected = $this->collection;
-		} elseif (is_string($keys)) {
-			$keys = explode(',', $keys);
+		foreach ($this->keys2Array($keys) as $key) {
+			if (isset($this->collection[$key])) {
+				$collected[$key] = $this->collection[$key];
+			}
 		}
 
-		if (is_array($keys)) {
-			foreach (array_keys($this->collection) as $key) {
-				if (in_array($key, $keys)) {
-					$collected[$key] = $this->collection[$key];
+		/* flush persistent? */
+		if (!$persist) {
+			$flashKeyStrLen = strlen($this->flashKey);
+
+			foreach ($this->sessionService as $key => $value) {
+				if (substr($key, 0, $flashKeyStrLen) == $this->flashKey) {
+					$this->sessionService->delete($key);
 				}
 			}
 		}
@@ -120,25 +146,39 @@ class collector implements collectorInterface
 
 	public function has($keys = null): bool
 	{
+		$has = false;
+
+		foreach ($this->keys2Array($keys) as $key) {
+			if (isset($this->collection[$key])) {
+				$has = true;
+
+				break;
+			}
+		}
+
+		return $has;
+	}
+
+	public function clear($keys = null): collectorInterface
+	{
+		foreach ($this->keys2Array($keys) as $key) {
+			unset($this->collection[$key]);
+			unset($this->keyCount[$key]);
+			$this->sessionService->delete($this->flashKey . $key);
+		}
+
+		return $this;
+	}
+
+	protected function keys2Array($keys = null)
+	{
 		if ($keys === null) {
 			$keys = array_keys($this->collection);
 		} elseif (is_string($keys)) {
 			$keys = explode(',', $keys);
 		}
 
-		$has = false;
-
-		if (is_array($keys)) {
-			foreach (array_keys($this->collection) as $key) {
-				if (isset($this->collection[$key])) {
-					$has = true;
-
-					break;
-				}
-			}
-		}
-
-		return $has;
+		return (array) $keys;
 	}
 
 	protected function _add(string $key, $context): void
