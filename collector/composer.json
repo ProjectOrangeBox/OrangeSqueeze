@@ -1,0 +1,15 @@
+{
+	"name": "projectorangebox/collector",
+	"authors": [{
+		"name": "Don Myers",
+		"email": "donmyers@me.com",
+		"homepage": "https://github.com/ProjectOrangeBox",
+		"role": "Everything"
+	}],
+	"description": "Collector",
+	"autoload": {
+		"psr-4": {
+			"projectorangebox\\collector\\": "src"
+		}
+	}
+}

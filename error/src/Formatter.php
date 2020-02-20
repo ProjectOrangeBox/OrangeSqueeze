@@ -47,7 +47,7 @@ class Formatter implements FormatterInterface
 		$this->status('default');
 	}
 
-	function status($statusCode): FormatterInterface
+	public function status($statusCode): FormatterInterface
 	{
 		$this->statusCode = abs($statusCode);
 
@@ -99,13 +99,6 @@ class Formatter implements FormatterInterface
 		if ($this->errorsService->has($groups)) {
 			$this->error($groups);
 		}
-	}
-
-	public function generic(string $title, string $body): void
-	{
-		$this->errorsService->add('title', $title, Errors::ROOT)->add('body', $body, Errors::ROOT);
-
-		$this->error(Errors::ROOT);
 	}
 
 	public function error($groups = null): void

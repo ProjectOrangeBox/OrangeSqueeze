@@ -1,18 +1,15 @@
 <?php
 
-/* wrapper */
-if (!function_exists('dieOnError')) {
-	function dieOnError(array $errors, int $statusCode = 406, string $view = null)
+if (!function_exists('show_error')) {
+	function show_error(string $title, string $body)
 	{
-		if (count($errors)) {
-			foreach ($errors as $fieldname => $errorTxt) {
-				service('error')->add($fieldname, $errorTxt, 'generic');
-			}
+		$errorService = service('error');
 
-			/* if there is a error then you never return from this method call */
-			service('error')->displayOnError('generic', $statusCode, $view);
+		$rootGroup = $errorService::ROOT;
 
-			exit(1); /* safety net */
-		}
+		$errorService
+			->add('title', $title, $rootGroup)
+			->add('body', $body, $rootGroup)
+			->display->error($rootGroup);
 	}
 }
