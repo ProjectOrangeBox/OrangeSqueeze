@@ -51,6 +51,8 @@ class collector implements collectorInterface
 			}
 
 			$this->persistenceSupported = true;
+
+			$this->insertPersistenceContext();
 		}
 	}
 
@@ -69,9 +71,9 @@ class collector implements collectorInterface
 			throw new ArgumentCountError('Context Required.');
 		}
 
-		$persist = isset($arguments[1]) ? (bool) $arguments[1] : false;
+		$persist = $arguments[1] ?? false;
 
-		return $this->add($key, $arguments[0], $persist);
+		return $this->add($key, $arguments[0], (bool) $persist);
 	}
 
 	/**
@@ -93,6 +95,7 @@ class collector implements collectorInterface
 			'keyCount' => $this->keyCount,
 			'duplicateKeys' => array_keys($this->duplicateKeys),
 			'flashKey' => $this->flashKey,
+			'persistenceSupported' => $this->persistenceSupported,
 		];
 	}
 
@@ -112,11 +115,7 @@ class collector implements collectorInterface
 			$this->_add($key, $context);
 
 			if ($persist) {
-				if ($this->persistenceSupported) {
-					$this->sessionService->set($this->flashKey . $key, $this->collection[$key]);
-				} else {
-					throw new Exception('Session not supplied to collector so presistence is not supported.');
-				}
+				$this->addPersistent($key);
 			}
 		}
 
@@ -131,26 +130,13 @@ class collector implements collectorInterface
 	 * @param mixed $keys
 	 * @return void
 	 */
-	public function collect($keys = null, bool $persist = false)
+	public function collect($keys = null)
 	{
 		$collected = [];
 
 		foreach ($this->keys2Array($keys) as $key) {
 			if (isset($this->collection[$key])) {
 				$collected[$key] = $this->collection[$key];
-			}
-		}
-
-		/* flush persistent? */
-		if ($this->persistenceSupported) {
-			if (!$persist) {
-				$flashKeyStrLen = strlen($this->flashKey);
-
-				foreach ($this->sessionService as $key => $value) {
-					if (substr($key, 0, $flashKeyStrLen) == $this->flashKey) {
-						$this->sessionService->delete($key);
-					}
-				}
 			}
 		}
 
@@ -211,5 +197,31 @@ class collector implements collectorInterface
 		}
 
 		@$this->keyCount[$key]++;
+	}
+
+	protected function addPersistent(string $key): void
+	{
+		if ($this->persistenceSupported) {
+			$this->sessionService->set($this->flashKey . $key, $this->collection[$key]);
+		} else {
+			throw new Exception('Session not supplied to collector so presistence is not supported.');
+		}
+	}
+
+	protected function insertPersistenceContext(): void
+	{
+		if ($this->persistenceSupported) {
+			$flashKeyStrLen = strlen($this->flashKey);
+
+			foreach ($this->sessionService as $key => $context) {
+				if (substr($key, 0, $flashKeyStrLen) == $this->flashKey) {
+					/* add it to the collection */
+					$this->add(substr($key, $flashKeyStrLen), $context);
+
+					/* now delete the persistent record */
+					$this->sessionService->delete($key);
+				}
+			}
+		}
 	}
 } /* end class */
