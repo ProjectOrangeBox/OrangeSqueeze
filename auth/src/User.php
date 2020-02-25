@@ -3,13 +3,14 @@
 namespace projectorangebox\auth;
 
 use Exception;
-use projectorangebox\fake\Cache;
+use projectorangebox\mock\Cache;
 use projectorangebox\cache\CacheInterface;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class User implements UserInterface
 {
-	use UserACLTrait;
-	use UserSessionTrait;
+	use traits\UserACLTrait;
+	use traits\UserSessionTrait;
 
 	protected $id; /* primary key */
 
@@ -19,18 +20,14 @@ class User implements UserInterface
 	protected $dashboardUrl;
 	protected $meta;
 
-	protected $readRoleId;
-	protected $editRoleId;
-	protected $deleteRoleId;
-
 	public function __construct(array $config)
 	{
 		/* defaults */
 		$defaults = [
 			'empty fields error' => 'Missing Required Field',
 			'general failure error' => 'Login Error',
-			'User Auth Class' => '\projectorangebox\auth\Auth',
-			'User Model Class' => '\projectorangebox\auth\UserAuthModel',
+			'User Auth Class' => '\projectorangebox\auth\auth\Auth',
+			'User Model Class' => '\projectorangebox\auth\auth\UserModel',
 		];
 
 		$this->config = array_replace($defaults, $config);
@@ -45,11 +42,12 @@ class User implements UserInterface
 		}
 
 		if (!isset($this->config['cacheService'])) {
+			/* create fake cache handler */
 			$this->config['cacheService'] = new Cache([]);
 		}
 
 		if (!($this->config['cacheService'] instanceof CacheInterface)) {
-			throw new Exception('Cache Service is not an instance of CacheInterface.');
+			throw new IncorrectInterfaceException('CacheInterface');
 		}
 
 		$this->UserACLTraitConstruct($config);
@@ -78,11 +76,6 @@ class User implements UserInterface
 			'is active' => $this->isActive,
 			'dashboard Url' => $this->dashboardUrl,
 			'meta' => $this->meta,
-			'read/write' => [
-				'read' => $this->readRoleId,
-				'edit' => $this->editRoleId,
-				'delete' => $this->deleteRoleId,
-			],
 			'roles' => $this->roles(),
 			'permissions' => $this->permissions(),
 		];

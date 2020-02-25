@@ -3,6 +3,9 @@
 namespace projectorangebox\validation;
 
 use Exception;
+use projectorangebox\common\exceptions\mvc\FilterNotFoundException;
+use projectorangebox\common\exceptions\mvc\RuleNotFoundException;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 use projectorangebox\validation\ValidateInterface;
 
 class Validate implements ValidateInterface
@@ -14,13 +17,13 @@ class Validate implements ValidateInterface
 	protected $error_field_value = '';
 	protected $field_data = [];
 	protected $config = [];
-	protected $rules = [];
+	protected $rulesClasses = [];
 	protected $errors = [];
 
 	public function __construct(array $config)
 	{
 		$this->config = $config;
-		$this->rules = $config['rules'];
+		$this->rulesClasses = $config['rules'];
 	}
 
 	public function success(): Bool
@@ -148,7 +151,7 @@ class Validate implements ValidateInterface
 				/* bail on first failure */
 				if ($success === false) {
 					/* end processing of the $rules array */
-					return $this;
+					break;
 				}
 			}
 		}
@@ -176,13 +179,27 @@ class Validate implements ValidateInterface
 
 		if (isset($this->attached[$class_name])) {
 			$this->attached[$class_name]($field, $param);
-		} elseif (isset($this->rules[$class_name])) {
-			$full_class_name = $this->rules[$class_name];
-			(new $full_class_name($this->field_data))->filter($field, $param);
+		} elseif (\class_exists($rule, true)) {
+			$temp = new $rule($this->field_data);
+
+			if (!($temp instanceof ValidateFilterInterface)) {
+				throw new IncorrectInterfaceException('ValidateFilterInterface');
+			}
+
+			$temp->filter($field, $param);
+		} elseif (isset($this->rulesClasses[$class_name])) {
+			$full_class_name = $this->rulesClasses[$class_name];
+			$temp = new $full_class_name($this->field_data);
+
+			if (!($temp instanceof ValidateFilterInterface)) {
+				throw new IncorrectInterfaceException('ValidateFilterInterface');
+			}
+
+			$temp->filter($field, $param);
 		} elseif (function_exists($class_name)) {
 			$field = ($param) ? $class_name($field, $param) : $class_name($field);
 		} else {
-			throw new Exception('Could not filter ' . $rule);
+			throw new FilterNotFoundException($rule);
 		}
 
 		/* filters don't fail */
@@ -198,13 +215,27 @@ class Validate implements ValidateInterface
 
 		if (isset($this->attached[$class_name])) {
 			$success = $this->attached[$class_name]($field, $param, $this->error_string, $this->field_data, $this);
-		} elseif (isset($this->rules[$class_name])) {
-			$full_class_name = $this->rules[$class_name];
-			$success = (new $full_class_name($this->field_data, $this->error_string))->validate($field, $param);
+		} elseif (\class_exists($rule)) {
+			$temp = new $rule($this->field_data, $this->error_string);
+
+			if (!($temp instanceof ValidateRuleInterface)) {
+				throw new IncorrectInterfaceException('ValidateRuleInterface');
+			}
+
+			$success = $temp->validate($field, $param);
+		} elseif (isset($this->rulesClasses[$class_name])) {
+			$full_class_name = $this->rulesClasses[$class_name];
+			$temp = new $full_class_name($this->field_data, $this->error_string);
+
+			if (!($temp instanceof ValidateRuleInterface)) {
+				throw new IncorrectInterfaceException('ValidateRuleInterface');
+			}
+
+			$success = $temp->validate($field, $param);
 		} elseif (function_exists($class_name)) {
 			$success = ($param) ? $class_name($field, $param) : $class_name($field);
 		} else {
-			throw new Exception('Could not validate ' . $rule);
+			throw new RuleNotFoundException($rule);
 		}
 
 		/* if success is really really false then it's a error */

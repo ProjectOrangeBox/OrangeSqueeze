@@ -2,10 +2,10 @@
 
 namespace projectorangebox\validation\filters;
 
-use projectorangebox\validation\ValidateFilter;
+use projectorangebox\validation\ValidateFilterAbstract;
 use projectorangebox\validation\ValidateFilterInterface;
 
-class filter_lowercase extends ValidateFilter implements ValidateFilterInterface
+class filter_lowercase extends ValidateFilterAbstract implements ValidateFilterInterface
 {
 	public function filter(&$field, string $options = ''): void
 	{

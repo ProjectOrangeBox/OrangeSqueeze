@@ -2,10 +2,10 @@
 
 namespace projectorangebox\validation\rules;
 
-use projectorangebox\validation\ValidateRule;
+use projectorangebox\validation\ValidateRuleAbstract;
 use projectorangebox\validation\ValidateRuleInterface;
 
-class alpha_numeric_spaces extends ValidateRule implements ValidateRuleInterface
+class alpha_numeric_spaces extends ValidateRuleAbstract implements ValidateRuleInterface
 {
 	public function validate(&$field, string $options = ''): bool
 	{
