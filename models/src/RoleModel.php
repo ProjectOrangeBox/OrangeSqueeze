@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\auth\models;
+namespace projectorangebox\models;
 
 use projectorangebox\models\MedooDatabaseModel;
 
@@ -10,7 +10,7 @@ class RoleModel extends MedooDatabaseModel implements RoleModelInterface
 	protected $table_join = 'orange_role_permission';
 	protected $rules = [
 		'id' => ['field' => 'id', 'label' => 'Id', 'rules' => 'required|integer|max_length[10]|less_than[4294967295]|filter_int[10]'],
-		'name' => ['field' => 'name', 'label' => 'Name', 'rules' => 'required|trim|projectorangebox\auth\rules\aclUnique[roles,name]'],
+		'name' => ['field' => 'name', 'label' => 'Name', 'rules' => 'required|trim|projectorangebox\models\rules\aclUnique[roles,name]'],
 		'description' => ['field' => 'description', 'label' => 'Description', 'rules' => 'required|trim'],
 	];
 	protected $ruleSets = [

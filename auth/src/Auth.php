@@ -1,31 +1,31 @@
 <?php
 
-namespace projectorangebox\auth\auth;
+namespace projectorangebox\auth;
 
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
+use projectorangebox\models\UserModelInterface;
 
 class Auth implements AuthInterface
 {
 	protected $config;
-	protected $getBy;
-
 	protected $userId;
-	protected $login;
+	protected $getBy;
 	protected $error;
-
 	protected $userModel;
 
 	public function __construct(array $config)
 	{
-		$this->config = $config;
+		/* defaults */
+		$defaults = [
+			'empty fields error' => 'Missing Required Field',
+			'general failure error' => 'Login Error',
+		];
+
+		$this->config = array_replace($defaults, $config);
 
 		$this->getBy = $config['get by'] ?? 'email';
 
-		$this->clear();
-
-		$userModelClass = $this->config['user model class'] ?? '\projectorangebox\auth\UserModel';
-
-		$this->userModel = new $userModelClass($config);
+		$this->userModel = $config['userModel'];
 
 		if (!($this->userModel instanceof UserModelInterface)) {
 			throw new IncorrectInterfaceException('UserModelInterface');
@@ -42,14 +42,9 @@ class Auth implements AuthInterface
 		return !empty($this->error);
 	}
 
-	public function userId(): int
-	{
-		return $this->userId;
-	}
-
 	public function login(string $login, string $password): bool
 	{
-		$this->clear();
+		$this->logout();
 
 		/* Does login and password contain anything empty values are NOT permitted for any reason */
 		if ((strlen(trim($login)) == 0) or (strlen(trim($password)) == 0)) {
@@ -58,7 +53,7 @@ class Auth implements AuthInterface
 			return false;
 		}
 
-		$user = $this->userModel->getBy($login, $this->getBy);
+		$user = $this->userModel->readBy($this->getBy, $login);
 
 		/* Try to locate a user by there email */
 		if (!$user) {
@@ -88,22 +83,11 @@ class Auth implements AuthInterface
 		return true;
 	}
 
-	public function logout(): Bool
-	{
-		$this->clear();
-
-		return true;
-	}
-
-	public function refresh(): bool
-	{
-		return true;
-	}
-
-	protected function clear(): void
+	public function logout(): bool
 	{
 		$this->error = '';
-		$this->login = null;
-		$this->userId = -1;
+		$this->userId = null;
+
+		return true;
 	}
 } /* end class */

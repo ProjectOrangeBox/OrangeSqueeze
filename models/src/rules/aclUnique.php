@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\auth\rules;
+namespace projectorangebox\models\rules;
 
 use projectorangebox\validation\ValidateRuleAbstract;
 use projectorangebox\validation\ValidateRuleInterface;

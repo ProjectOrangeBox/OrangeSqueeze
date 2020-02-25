@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\auth\models;
+namespace projectorangebox\models;
 
 interface PermissionModelInterface
 {

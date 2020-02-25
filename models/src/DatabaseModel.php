@@ -59,6 +59,11 @@ class DatabaseModel extends DataModel
 		return $this->db->select($this->table, '*', $where);
 	}
 
+	public function readBy(string $column, string $value): array
+	{
+		return $this->db->select($this->table, '*', [$column => $value]);
+	}
+
 	public function delete(string $primaryId): bool
 	{
 		return $this->deleteBy($this->primaryKey, $primaryId);
