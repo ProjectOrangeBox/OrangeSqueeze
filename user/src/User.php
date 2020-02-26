@@ -2,17 +2,16 @@
 
 namespace projectorangebox\user;
 
+use PDO;
 use Exception;
 use projectorangebox\mock\Cache;
-use projectorangebox\auth\AuthInterface;
 use projectorangebox\cache\CacheInterface;
 use projectorangebox\session\SessionInterface;
-use projectorangebox\models\UserModelInterface;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class User implements UserInterface
 {
-	protected $id; /* primary key */
+	protected $id; /* primary key integer */
 
 	protected $email;
 	protected $username;
@@ -20,9 +19,9 @@ class User implements UserInterface
 	protected $dashboardUrl;
 	protected $meta;
 
-	protected $userModel;
-	protected $authService;
+	protected $db;
 	protected $sessionService;
+	protected $cacheService;
 
 	protected $sessionKey = 'user::id';
 
@@ -34,31 +33,52 @@ class User implements UserInterface
 
 	protected $lazyLoaded = false;
 
+	protected $userTable;
+	protected $roleTable;
+	protected $userRoleTable;
+	protected $rolePermissionTable;
+	protected $permissionTable;
+
 	public function __construct(array $config)
 	{
 		$this->config = $config;
 
 		/* check for required */
-		$required = ['admin user', 'guest user', 'admin role', 'everyone role'];
+		$required = [
+			'admin user',
+			'guest user',
+			'admin role',
+			'everyone role',
+			'user table',
+			'role table',
+			'permission table',
+			'user role table',
+			'role permission table',
+		];
 
 		foreach ($required as $key) {
-			if (!isset($this->config['auth'][$key])) {
+			if (!isset($this->config[$key])) {
 				throw new Exception('The required configuration value "' . $key . '" is not set.');
 			}
 		}
 
-		$this->guestUserId = $this->config['auth']['guest user'];
-		$this->adminRoleId = $this->config['auth']['admin role'];
+		$this->userTable = $this->config['user table'];
+		$this->roleTable = $this->config['role table'];
+		$this->permissionTable = $this->config['permission table'];
+		$this->userRoleTable = $this->config['user role table'];
+		$this->rolePermissionTable = $this->config['role permission table'];
 
-		/* default to guest */
-		$this->id = $this->guestUserId;
+		$this->guestUserId = (int) $this->config['guest user'];
+		$this->adminRoleId = (int) $this->config['admin role'];
 
-		if (!isset($this->config['auth']['cacheService'])) {
+		if (!isset($this->config['cacheService'])) {
 			/* create fake cache handler */
-			$this->config['auth']['cacheService'] = new Cache([]);
+			$this->cacheService = new Cache([]);
+		} else {
+			$this->cacheService = $this->config['cacheService'];
 		}
 
-		if (!($this->config['auth']['cacheService'] instanceof CacheInterface)) {
+		if (!($this->cacheService instanceof CacheInterface)) {
 			throw new IncorrectInterfaceException('CacheInterface');
 		}
 
@@ -68,17 +88,17 @@ class User implements UserInterface
 			throw new IncorrectInterfaceException('SessionInterface');
 		}
 
-		$this->authService = $config['authService'];
+		$this->db = $config['db'];
 
-		if (!($this->authService instanceof AuthInterface)) {
-			throw new IncorrectInterfaceException('AuthInterface');
+		if (!($this->db instanceof PDO)) {
+			throw new IncorrectInterfaceException('PDO');
 		}
 
-		$this->userModel = $config['userModel'];
+		/* default as guest */
+		$this->id = $this->guestUserId;
 
-		if (!($this->userModel instanceof UserModelInterface)) {
-			throw new IncorrectInterfaceException('UserModelInterface');
-		}
+		/* unloaded */
+		$this->lazyLoaded = false;
 
 		/* try to restore session */
 		$this->retrieve();
@@ -98,6 +118,17 @@ class User implements UserInterface
 	public function setUserId(int $userId): bool
 	{
 		$this->id = $userId;
+
+		$this->flush();
+
+		$this->save();
+
+		return true;
+	}
+
+	public function setUserGuest(): bool
+	{
+		$this->id = $this->guestUserId;
 
 		$this->flush();
 
@@ -228,50 +259,121 @@ class User implements UserInterface
 		return $this->hasRole($this->adminRoleId);
 	}
 
+	/* protected */
+
 	protected function lazyLoad(): void
 	{
 		if (!$this->lazyLoaded) {
-			/* false or array */
-			$userRecord = $this->userModel->readDetailedBy($this->id);
-
-			if ($userRecord) {
-				$this->username = $userRecord['username'];
-				$this->email = $userRecord['email'];
-				$this->dashboardUrl = $userRecord['dashboard_url'];
-				$this->isActive = ((int) $userRecord['is_active'] == 1);
-				$this->meta = json_decode($userRecord['meta']);
-
-				$this->readRoleId = $userRecord['user_read_role_id'];
-				$this->editRoleId = $userRecord['user_edit_role_id'];
-				$this->deleteRoleId = $userRecord['user_delete_role_id'];
-
-				$this->roles       = (array) $userRecord['roles'];
-				$this->permissions = (array) $userRecord['permissions'];
-			}
+			$this->getUser($this->id);
 
 			$this->lazyLoaded = true;
 		}
 	}
 
-	/* auth service */
-
-	public function login(string $login, string $password): bool
+	protected function getUser(int $userId): void
 	{
-		return $this->authService->login($login, $password);
+		$userRecord = $this->_getUserCached($userId);
+
+		if ($userRecord) {
+			$this->username = $userRecord->username;
+			$this->email = $userRecord->email;
+			$this->dashboardUrl = $userRecord->dashboard_url;
+			$this->isActive = ((int) $userRecord->is_active == 1);
+			$this->meta = json_decode($userRecord->meta);
+
+			$this->readRoleId = $userRecord->user_read_role_id ?? 0;
+			$this->editRoleId = $userRecord->user_edit_role_id ?? 0;
+			$this->deleteRoleId = $userRecord->user_delete_role_id ?? 0;
+
+			$rolesPermissions = $this->_getRolesPermissionsCached($userId);
+
+			$this->roles = (array) $rolesPermissions['roles'];
+			$this->permissions = (array) $rolesPermissions['permissions'];
+		}
 	}
 
-	public function logout(): bool
+	protected function _getUserCached(int $userId)
 	{
-		return $this->authService->logout();
+		$cacheKey = 'user.id.' . $userId . '.details';
+
+		if (!$record = $this->cacheService->get($cacheKey)) {
+			$record = $this->query('select * from ' . $this->userTable . ' where id = :userid limit 1', [':userid' => (int) $userId]);
+
+			if ($record) {
+				$this->cacheService->save($cacheKey, $record);
+			}
+		}
+
+		return $record;
 	}
 
-	public function error(): string
+	protected function _getRolesPermissionsCached(int $userId): array
 	{
-		return $this->authService->errors();
+		$cacheKey = 'user.id.' . $userId . '.roles.permissions';
+
+		if (!$record = $this->cacheService->get($cacheKey)) {
+			$record = $this->_getRolesPermissions($userId);
+
+			$this->cacheService->save($cacheKey, $record);
+		}
+
+		return $record;
 	}
 
-	public function has(): bool
+	protected function _getRolesPermissions(int $userId): array
 	{
-		return $this->authService->has();
+		$rolesPermissions = [];
+
+		$sql = "select
+			`user_id`,
+			`" . $this->roleTable . "`.`id` `orange_roles_id`,
+			`" . $this->roleTable . "`.`name` `orange_roles_name`,
+			`" . $this->rolePermissionTable . "`.`permission_id` `orange_permission_id`,
+			`" . $this->permissionTable . "`.`key` `orange_permission_key`
+			from " . $this->userRoleTable . "
+			left join " . $this->roleTable . " on " . $this->roleTable . ".id = " . $this->userRoleTable . ".role_id
+			left join " . $this->rolePermissionTable . " on " . $this->rolePermissionTable . ".role_id = " . $this->roleTable . ".id
+			left join " . $this->permissionTable . " on " . $this->permissionTable . ".id = " . $this->rolePermissionTable . ".permission_id
+			where " . $this->userRoleTable . ".user_id = :userid";
+
+		$dbc = $this->query($sql, [':userid' => (int) $userId]);
+
+		if ($dbc) {
+			while ($dbr = $dbc->fetchObject()) {
+				if ($dbr->orange_roles_name) {
+					if (!empty($dbr->orange_roles_name)) {
+						$rolesPermissions['roles'][(int) $dbr->orange_roles_id] = $dbr->orange_roles_name;
+					}
+				}
+				if ($dbr->orange_permission_key) {
+					if (!empty($dbr->orange_permission_key)) {
+						$rolesPermissions['permissions'][(int) $dbr->orange_permission_id] = $dbr->orange_permission_key;
+					}
+				}
+			}
+		}
+
+		return $rolesPermissions;
+	}
+
+	protected function query(string $sql, array $execute = [], $onEmpty = false)
+	{
+		$query = $this->db->prepare($sql);
+		$query->execute($execute);
+
+		$count = $query->rowCount();
+
+		switch ($count) {
+			case 0:
+				$return = $onEmpty;
+				break;
+			case 1:
+				$return = $query->fetchObject();
+				break;
+			default:
+				$return = $query;
+		}
+
+		return $return;
 	}
 } /* end class */

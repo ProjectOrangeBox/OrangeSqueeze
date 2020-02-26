@@ -25,9 +25,4 @@ interface UserInterface
 	public function save(): bool;
 	public function retrieve(): bool;
 	public function flush(): bool;
-
-	public function login(string $login, string $password): bool;
-	public function logout(): bool;
-	public function error(): string;
-	public function has(): bool;
 }

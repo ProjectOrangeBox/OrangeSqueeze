@@ -52,6 +52,18 @@ class DatabaseModel extends DataModel
 		return $this->captureDBError();
 	}
 
+	public function get(int $id = null)
+	{
+		$where = ($id) ? [$this->primaryKey => $id] : null;
+
+		return $this->get($this->table, '*', $where);
+	}
+
+	public function getBy(string $column, string $value)
+	{
+		return $this->get($this->table, '*', [$column => $value]);
+	}
+
 	public function read(int $id = null): array
 	{
 		$where = ($id) ? [$this->primaryKey => $id] : null;

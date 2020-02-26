@@ -2,6 +2,8 @@
 
 namespace projectorangebox\cache;
 
+use FS;
+
 class CacheFile implements CacheInterface
 {
 	protected $cachePath = '';
@@ -13,7 +15,7 @@ class CacheFile implements CacheInterface
 		$this->cachePath = rtrim($config['path'], '/') . '/';
 		$this->ttl = $config['ttl'] ?? 0;
 
-		\FS::mkdir($this->cachePath);
+		FS::mkdir($this->cachePath);
 	}
 
 	public function get(string $key) /* mixed */
@@ -23,13 +25,13 @@ class CacheFile implements CacheInterface
 		$get = false;
 
 		if ($this->ttl > 0) {
-			if (\FS::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && \FS::file_exists($this->cachePath . $key)) {
+			if (FS::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && FS::file_exists($this->cachePath . $key)) {
 				$meta = $this->getMetadata($key);
 
 				if ($this->isExpired($meta['expire'])) {
 					$this->delete($key);
 				} else {
-					$get = include \FS::resolve($this->cachePath . $key);
+					$get = include FS::resolve($this->cachePath . $key);
 				}
 			} else {
 				\log_message('info', 'Cache ttl less that 1 therefore caching loading skipped.');
@@ -50,8 +52,8 @@ class CacheFile implements CacheInterface
 
 		$metaData = [];
 
-		if (\FS::is_file($file . '.meta') && \FS::is_file($file)) {
-			$metaData = include \FS::resolve($file . '.meta');
+		if (FS::is_file($file . '.meta') && FS::is_file($file)) {
+			$metaData = include FS::resolve($file . '.meta');
 		}
 
 		return $metaData;
@@ -61,10 +63,10 @@ class CacheFile implements CacheInterface
 	{
 		\log_message('info', 'Cache Save ' . $key);
 
-		$valuePHP = \FS::var_export_php($value);
-		$metaPHP = \FS::var_export_php($this->buildMetadata($valuePHP, $this->ttl($ttl)));
+		$valuePHP = FS::var_export_php($value);
+		$metaPHP = FS::var_export_php($this->buildMetadata($valuePHP, $this->ttl($ttl)));
 
-		return ((bool) \FS::atomic_file_put_contents($this->cachePath . $key . '.meta', $metaPHP) && (bool) \FS::atomic_file_put_contents($this->cachePath . $key, $valuePHP));
+		return ((bool) FS::atomic_file_put_contents($this->cachePath . $key . '.meta', $metaPHP) && (bool) FS::atomic_file_put_contents($this->cachePath . $key, $valuePHP));
 	}
 
 	public function buildMetadata(string $valueString, int $ttl): array
@@ -83,8 +85,8 @@ class CacheFile implements CacheInterface
 
 		$file = $this->cachePath . $key;
 
-		if (\FS::file_exists($file)) {
-			\FS::unlink($file);
+		if (FS::file_exists($file)) {
+			FS::unlink($file);
 		}
 
 		return true;
@@ -94,8 +96,8 @@ class CacheFile implements CacheInterface
 	{
 		$keys = [];
 
-		foreach (\FS::glob($this->cachePath . '*') as $path) {
-			$keys[] = \FS::basename($path);
+		foreach (FS::glob($this->cachePath . '*') as $path) {
+			$keys[] = FS::basename($path);
 		}
 
 		return $keys;
@@ -103,7 +105,7 @@ class CacheFile implements CacheInterface
 
 	public function clean(): bool
 	{
-		foreach (\FS::glob($this->cachePath . '*') as $path) {
+		foreach (FS::glob($this->cachePath . '*') as $path) {
 			self::delete($path);
 		}
 
