@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\common\exceptions\mvc;
+namespace projectorangebox\validation\exceptions;
 
 use projectorangebox\common\exceptions\MVCException;
 

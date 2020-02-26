@@ -1,23 +1,15 @@
 <?php
 
 /* wrapper */
-if (!function_exists('filterRequest')) {
-	function filterRequest($rules, string $key)
+if (!function_exists('isValid')) {
+	function isValid($rules, $field, &$errors = null)
 	{
-		$field = service('request')->request($key, null);
+		$v = service('validate');
 
-		service('validate')->rule($rules, $field);
+		$v->rule($rules, $field);
 
-		return $field;
-	}
-}
+		$errors = $v->errors();
 
-/* wrapper */
-if (!function_exists('filter')) {
-	function filter($rules, $field)
-	{
-		service('validate')->rule($rules, $field);
-
-		return $field;
+		return $v->success();
 	}
 }

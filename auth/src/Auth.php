@@ -2,16 +2,18 @@
 
 namespace projectorangebox\auth;
 
-use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
-use projectorangebox\models\UserModelInterface;
-
 class Auth implements AuthInterface
 {
 	protected $config;
-	protected $userId;
-	protected $getBy;
 	protected $error;
-	protected $userModel;
+	protected $userId;
+
+	/* database configuration */
+	protected $db;
+	protected $table;
+	protected $username_column;
+	protected $password_column;
+	protected $is_active_column;
 
 	public function __construct(array $config)
 	{
@@ -19,17 +21,19 @@ class Auth implements AuthInterface
 		$defaults = [
 			'empty fields error' => 'Missing Required Field',
 			'general failure error' => 'Login Error',
+			'table' => 'users',
+			'username column' => 'email',
+			'is active column' => 'is_active',
+			'password column' => 'password',
 		];
 
 		$this->config = array_replace($defaults, $config);
 
-		$this->getBy = $config['get by'] ?? 'email';
-
-		$this->userModel = $config['userModel'];
-
-		if (!($this->userModel instanceof UserModelInterface)) {
-			throw new IncorrectInterfaceException('UserModelInterface');
-		}
+		$this->db = $config['db'];
+		$this->table = $config['table'];
+		$this->username_column = $config['username column'];
+		$this->password_column = $config['password column'];
+		$this->is_active_column = $config['is active column'];
 	}
 
 	public function error(): string
@@ -37,7 +41,7 @@ class Auth implements AuthInterface
 		return $this->error;
 	}
 
-	public function has(): bool
+	public function hasError(): bool
 	{
 		return !empty($this->error);
 	}
@@ -53,31 +57,28 @@ class Auth implements AuthInterface
 			return false;
 		}
 
-		$user = $this->userModel->readBy($this->getBy, $login);
+		$user = $this->get($login);
 
-		/* Try to locate a user by there email */
-		if (!$user) {
+		if ($user == false || !is_array($user)) {
 			$this->error = $this->config['general failure error'];
 
 			return false;
 		}
 
 		/* Verify the Password entered with what's in the user object */
-		if (password_verify($password, $user['password']) !== true) {
+		if (password_verify($password, $user[$this->password_column]) !== true) {
 			$this->error = $this->config['general failure error'];
 
 			return false;
 		}
 
 		/* Is this user activated? */
-		if ((int) $user['is_active'] !== 1) {
+		if ((int) $user[$this->is_active_column] !== 1) {
 			$this->error = $this->config['general failure error'];
 
 			return false;
 		}
 
-		/* save the passed login */
-		$this->login = $login;
 		$this->userId = (int) $user['id'];
 
 		return true;
@@ -89,5 +90,17 @@ class Auth implements AuthInterface
 		$this->userId = null;
 
 		return true;
+	}
+
+	public function userId(): int
+	{
+		return $this->userId;
+	}
+
+	protected function get(string $login)
+	{
+		$user = $this->db->select($this->table, [$this->password_column, $this->is_active_column], [$this->username_column => $login]);
+
+		return count($user) ? $user[0] : false;
 	}
 } /* end class */

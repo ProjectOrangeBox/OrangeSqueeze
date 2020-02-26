@@ -59,6 +59,23 @@ abstract class ValidateRuleAbstract
 
 	/**
 	 *
+	 * Extend this function
+	 *
+	 * @access public
+	 *
+	 * @param &$field
+	 * @param string $options
+	 *
+	 * @return bool
+	 *
+	 */
+	public function validate(&$field, string $options = ''): bool
+	{
+		return false;
+	}
+
+	/**
+	 *
 	 * Storage a reference to the current field for further processing
 	 *
 	 * @access public
@@ -73,23 +90,6 @@ abstract class ValidateRuleAbstract
 		$this->field = &$field;
 
 		return $this;
-	}
-
-	/**
-	 *
-	 * validate method place holder
-	 *
-	 * @access public
-	 *
-	 * @param &$field
-	 * @param string $options
-	 *
-	 * @return bool
-	 *
-	 */
-	public function validate(&$field, string $options = ''): bool
-	{
-		return false;
 	}
 
 	/**
@@ -226,41 +226,5 @@ abstract class ValidateRuleAbstract
 	public function is_bol($field): bool
 	{
 		return (in_array(strtolower($field), array_merge($this->true_array, $this->false_array), true)) ? true : false;
-	}
-
-	/**
-	 *
-	 * Locate a file in WWW or ROOT and return it if it's found.
-	 *
-	 * @access public
-	 *
-	 * @param string $file
-	 *
-	 * @throws
-	 * @return
-	 *
-	 * #### Example
-	 * ```php
-	 * $found = locate_file('/assets/images/bicycle.jpg');
-	 * ```
-	 */
-	public function locate_file(string $file)
-	{
-		#$file = trim($file, '/');
-
-		/* is it based off the www folder? */
-		#if (file_exists(__WWW__ . '/' . $file)) {
-		#return __WWW__ . '/' . $file;
-		#}
-
-		/* is it based off the rootpath folder? */
-		#if (file_exists(__ROOT__ . '/' . $file)) {
-		#return __ROOT__ . '/' . $file;
-		#}
-
-		/* not sure where it is */
-		#$this->error_string = 'File Not Found.';
-
-		#return false;
 	}
 } /* end class */

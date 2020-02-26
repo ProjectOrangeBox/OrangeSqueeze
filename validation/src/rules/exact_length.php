@@ -15,6 +15,6 @@ class exact_length extends ValidateRuleAbstract implements ValidateRuleInterface
 			return false;
 		}
 
-		return (MB_ENABLED === true) ? (mb_strlen($field) === (int) $options) : (strlen($field) === (int) $options);
+		return (strlen($field) === (int) $options);
 	}
 }
