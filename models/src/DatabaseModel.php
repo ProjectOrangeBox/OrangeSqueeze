@@ -2,6 +2,7 @@
 
 namespace projectorangebox\models;
 
+use PDO;
 use projectorangebox\common\DataModel;
 
 class DatabaseModel extends DataModel
@@ -86,6 +87,31 @@ class DatabaseModel extends DataModel
 		$this->db->delete($this->table, [$primaryKey => $primaryId]);
 
 		return $this->captureDBError();
+	}
+
+	/* PDO simple as beans select query wrapper */
+	protected function query(string $sql, array $execute = [], $onEmpty = false)
+	{
+		$query = $this->db->pdo->prepare($sql);
+
+		$query->execute($execute);
+
+		$count = $query->rowCount();
+
+		switch ($count) {
+			case 0:
+				$return = $onEmpty;
+				break;
+			case 1:
+				$return = $query->fetch(PDO::FETCH_ASSOC);
+				break;
+			default:
+				$return = $query;
+		}
+
+		$this->captureDBError();
+
+		return $return;
 	}
 
 	protected function captureDBError(): bool

@@ -6,6 +6,7 @@ interface UserInterface
 {
 	public function __construct(array $config);
 	public function setUserId(int $userId): bool;
+	public function setUserGuest(): bool;
 
 	public function roles(): array;
 	public function hasRole(int $role): bool;

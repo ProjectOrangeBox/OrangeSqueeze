@@ -1,15 +1,15 @@
 {
-	"name": "projectorangebox/quickresponse",
+	"name": "projectorangebox/formatter",
 	"authors": [{
 		"name": "Don Myers",
 		"email": "donmyers@me.com",
 		"homepage": "https://github.com/ProjectOrangeBox",
 		"role": "Everything"
 	}],
-	"description": "Quick Response",
+	"description": "View formatter with request auto detection and responses if nessesary.",
 	"autoload": {
 		"psr-4": {
-			"projectorangebox\\quickResponse\\": "src"
+			"projectorangebox\\formatter\\": "src"
 		}
 	}
 }

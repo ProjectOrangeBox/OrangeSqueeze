@@ -43,8 +43,8 @@ class collector implements collectorInterface
 
 	public function __construct(array $config)
 	{
-		if (isset($config['session service'])) {
-			$this->sessionService = $config['session service'];
+		if (isset($config['sessionService'])) {
+			$this->sessionService = $config['sessionService'];
 
 			if (!($this->sessionService instanceof SessionInterface)) {
 				throw new IncorrectInterfaceException('SessionInterface');

@@ -356,6 +356,7 @@ class User implements UserInterface
 		return $rolesPermissions;
 	}
 
+	/* PDO simple as beans select query wrapper */
 	protected function query(string $sql, array $execute = [], $onEmpty = false)
 	{
 		$query = $this->db->prepare($sql);

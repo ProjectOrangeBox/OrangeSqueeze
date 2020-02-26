@@ -1,11 +1,11 @@
 <?php
 
-namespace projectorangebox\quickResponse;
+namespace projectorangebox\formatter;
 
 use FS;
 use Exception;
 
-class quickResponse implements quickResponseInterface
+class formatter implements formatterInterface
 {
 	/* default server content type */
 	protected $contentType = 'text/html';
@@ -33,6 +33,8 @@ class quickResponse implements quickResponseInterface
 	/* default charset */
 	protected $charset = 'UTF-8';
 
+	protected $send = false;
+
 	/**
 	 * __construct
 	 *
@@ -54,31 +56,22 @@ class quickResponse implements quickResponseInterface
 		$this->contentType = $config['content type'] ?? $this->contentType;
 	}
 
-	/**
-	 * header
-	 *
-	 * Change server response type and server response code and exit code
-	 *
-	 * @param int $statusCode
-	 * @param string $type
-	 * @param mixed string
-	 * @return quickResponseInterface
-	 */
-	public function header(int $statusCode, string $type, string $charset = 'UTF-8'): quickResponseInterface
+	public function send(int $statusCode, string $type, string $charset = 'UTF-8'): formatterInterface
 	{
-		return $this->code($statusCode)->type($type, $charset);
+		$this->send = true;
+
+		$this->code($statusCode);
+		$this->type($type, $charset);
+
+		return $this;
 	}
 
-	/**
-	 * type
-	 *
-	 * Change server response type
-	 *
-	 * @param string $type
-	 * @param mixed string
-	 * @return quickResponseInterface
-	 */
-	public function type(string $type, string $charset = 'UTF-8'): quickResponseInterface
+	public function format(array $array = [], string $view = null): string
+	{
+		return ($this->send) ? $this->_display($array, $view) : $this->_format($array, $view);
+	}
+
+	protected function type(string $type, string $charset = 'UTF-8'): void
 	{
 		if (!isset($this->typeMap[$type])) {
 			throw new Exception('Unknown Content Type.');
@@ -86,19 +79,9 @@ class quickResponse implements quickResponseInterface
 
 		$this->contentType = $this->typeMap[$type];
 		$this->charset = $charset;
-
-		return $this;
 	}
 
-	/**
-	 * code
-	 *
-	 * Change server response code and exit code
-	 *
-	 * @param int $statusCode
-	 * @return quickResponseInterface
-	 */
-	public function code(int $statusCode): quickResponseInterface
+	protected function code(int $statusCode): void
 	{
 		$this->statusCode = abs($statusCode);
 
@@ -108,20 +91,9 @@ class quickResponse implements quickResponseInterface
 		} else {
 			$this->exitCode = 1;
 		}
-
-		return $this;
 	}
 
-	/**
-	 * format
-	 *
-	 * format and return
-	 *
-	 * @param mixed array
-	 * @param mixed string
-	 * @return string
-	 */
-	public function format(array $array = [], string $view = null): string
+	protected function _format(array $array = [], string $view = null): string
 	{
 		$view = trim($this->formatFilePrefix . ($view ?? $this->statusCode), '/');
 
@@ -132,16 +104,7 @@ class quickResponse implements quickResponseInterface
 		return $this->_view($this->formatFiles[$view], $array);
 	}
 
-	/**
-	 * display
-	 *
-	 * Display & Die
-	 *
-	 * @param mixed array
-	 * @param mixed string
-	 * @return void
-	 */
-	public function display(array $array = [], string $view = null): void
+	protected function _display(array $array = [], string $view = null): void
 	{
 		if ($this->contentType) {
 			header("Content-type: " . $this->contentType . '; charset=UTF-8');
@@ -151,7 +114,7 @@ class quickResponse implements quickResponseInterface
 			http_response_code($this->statusCode);
 		}
 
-		echo $this->format($array, $view);
+		echo $this->_format($array, $view);
 
 		exit($this->exitCode);
 	}

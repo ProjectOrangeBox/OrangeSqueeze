@@ -3,7 +3,7 @@
 if (!function_exists('show_error')) {
 	function show_error(string $title, string $body)
 	{
-		service('quickresponse')->display(['title' => $title, 'body' => $body], 'show_error');
+		service('formatter')->display(['title' => $title, 'body' => $body], 'show_error');
 	}
 }
 
@@ -11,7 +11,7 @@ if (!function_exists('dieOnError')) {
 	function dieOnError(int $code, string $keys)
 	{
 		if (service('collector')->has($keys)) {
-			service('quickresponse')->code($code)->display(['errors' => service('collector')->collect($keys)]);
+			service('formatter')->send($code)->display(['errors' => service('collector')->collect($keys)]);
 		}
 	}
 }
