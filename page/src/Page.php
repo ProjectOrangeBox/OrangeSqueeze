@@ -2,13 +2,15 @@
 
 namespace projectorangebox\page;
 
+use FS;
 use Pear;
-use Exception;
-use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 use projectorangebox\page\traits\DataTrait;
 use projectorangebox\page\traits\ElementsTrait;
-use projectorangebox\page\traits\FormattersTrait;
 use projectorangebox\response\ResponseInterface;
+use projectorangebox\page\traits\FormattersTrait;
+use projectorangebox\common\exceptions\mvc\ParserException;
+use projectorangebox\common\exceptions\mvc\ViewNotFoundException;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class Page implements PageInterface
 {
@@ -82,7 +84,7 @@ class Page implements PageInterface
 		require __DIR__ . '/Pear.php';
 
 		/* "inject" plugins */
-		pear::_construct($config['plugins']);
+		Pear::_construct($config['plugins']);
 
 		\log_message('info', 'Page Class Initialized');
 	}
@@ -102,7 +104,7 @@ class Page implements PageInterface
 		$view = ($view) ?? $this->defaultView;
 
 		if ($view == null) {
-			throw new Exception('No View provided for render.');
+			throw new ViewNotFoundException();
 		}
 
 		/* this is going to be the "main" section */
@@ -123,7 +125,7 @@ class Page implements PageInterface
 		$data = array_replace($this->viewData, (array) $data);
 
 		if (!isset($this->views[$viewFile])) {
-			throw new Exception('View "' . $viewFile . '" Not Found.');
+			throw new ViewNotFoundException($viewFile);
 		}
 
 		$viewFile = $this->views[$viewFile];
@@ -140,7 +142,7 @@ class Page implements PageInterface
 	public function extend(string $template = null): PageInterface
 	{
 		if ($this->extending) {
-			throw new \Exception('You are already extending "' . $this->extending . '" therefore we cannot extend "' . $template . '".');
+			throw new ParserException('You are already extending "' . $this->extending . '" therefore we cannot extend "' . $template . '".');
 		}
 
 		$this->extending = $template;
@@ -156,7 +158,7 @@ class Page implements PageInterface
 
 		ob_start();
 
-		$__returned = include \FS::resolve($__path);
+		$__returned = include FS::resolve($__path);
 
 		/* if nothing returned than 1 is returned */
 		if ($__returned === 1) {

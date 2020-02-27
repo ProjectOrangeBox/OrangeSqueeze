@@ -4,6 +4,8 @@
 
 use projectorangebox\page\PearAbstract;
 use projectorangebox\page\PearInterface;
+use projectorangebox\common\exceptions\php\ClassNotFoundException;
+use projectorangebox\common\exceptions\mvc\PluginNotFoundException;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class Pear implements PearInterface
@@ -24,13 +26,13 @@ class Pear implements PearInterface
 		log_message('debug', 'Pear::__callStatic::' . $name);
 
 		if (!isset(self::$plugins[$name])) {
-			throw new Exception('Plugin Not Found "' . $name . '".');
+			throw new PluginNotFoundException($name);
 		}
 
 		$namespacedClass = self::$plugins[$name];
 
 		if (!class_exists($namespacedClass, true)) {
-			throw new Exception('Class "' . $namespacedClass . '" for "' . $name . '" Not Found.');
+			throw new ClassNotFoundException($namespacedClass);
 		}
 
 		$plugin = new $namespacedClass;
