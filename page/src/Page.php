@@ -2,8 +2,10 @@
 
 namespace projectorangebox\page;
 
-use Exception;
 use Pear;
+use Exception;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
+use projectorangebox\response\ResponseInterface;
 
 class Page implements PageInterface
 {
@@ -15,30 +17,42 @@ class Page implements PageInterface
 
 	protected $variables = [];
 	protected $defaultView = '';
-	protected $config;
 	protected $responseService;
 	protected $dataService;
 	protected $pageVariablePrefix = '';
 	protected $extending = false;
 	protected $views = [];
+	protected $viewData = [];
+	protected $link_attributes;
+	protected $script_attributes;
 
 	public function __construct(array $config)
 	{
-		$this->config = &$config;
-
 		$this->responseService = $config['responseService'];
-		$this->dataService = $config['dataService'];
-		$this->views = $config['views'];
 
-		$this->pageVariablePrefix = $config['page_prefix'] ?? 'page_';
-
-		if ($config['page min']) {
-			define('PAGEMIN', $config['page min']);
+		if (!($this->responseService instanceof ResponseInterface)) {
+			throw new IncorrectInterfaceException('ResponseInterface');
 		}
 
+		$this->link_attributes = $config['link attributes'] ?? ['href' => '', 'type' => 'text/css', 'rel' => 'stylesheet'];
+		$this->script_attributes = $config['script attributes'] ?? ['src' => '', 'type' => 'text/javascript', 'charset' => 'utf-8'];
+
+		/* views we know of */
+		$this->views = $config['views'] ?? [];
+
+		/* if a default view was sent in set it */
 		if (isset($config['default view'])) {
 			$this->setDefaultView($config['default view']);
 		}
+
+		if (\is_array($config['define'])) {
+			foreach ($config['define'] as $key => $value) {
+				define($key, $value);
+			}
+		}
+
+		/* all page created/managed variables start with */
+		$this->pageVariablePrefix = $config['page_prefix'] ?? 'page_';
 
 		$page_configs = $config[$this->pageVariablePrefix];
 
@@ -65,22 +79,81 @@ class Page implements PageInterface
 		\log_message('info', 'Page Class Initialized');
 	}
 
+	/* set / get view variables */
+
+	public function var(string $name, $value): PageInterface
+	{
+		$this->viewData[$name] = $value;
+
+		return $this;
+	}
+
+	public function vars(array $array): PageInterface
+	{
+		foreach ($array as $key => $value) {
+			$this->viewData[$key] = $value;
+		}
+
+		return $this;
+	}
+
+	public function getVar(string $name) /* mixed */
+	{
+		/* view variable or page variable? */
+		if (isset($this->viewData[$name])) {
+			/* view */
+			$response = $this->viewData[$name];
+		} elseif (isset($this->viewData[$this->pageVariablePrefix . $name])) {
+			/* has this already been sent? */
+			$response = $this->viewData[$this->pageVariablePrefix . $name];
+		}
+
+		if (isset($this->variables[$this->pageVariablePrefix . $name])) {
+			/* has it already been sorted */
+			if (!$this->variables[$this->pageVariablePrefix . $name][0]) {
+				/* no we must sort it */
+				array_multisort($this->variables[$this->pageVariablePrefix . $name][1], SORT_DESC, SORT_NUMERIC, $this->variables[$this->pageVariablePrefix . $name][2]);
+
+				/* mark it as sorted */
+				$this->variables[$this->pageVariablePrefix . $name][0] = true;
+			}
+
+			foreach ($this->variables[$this->pageVariablePrefix . $name][2] as $append) {
+				$response .= $append;
+			}
+		}
+
+		return $response;
+	}
+
+	public function getVars(): array
+	{
+		return $this->viewData;
+	}
+
+	public function clearVars(): PageInterface
+	{
+		$this->viewData = [];
+
+		return $this;
+	}
+
 	/* set by router */
-	public function setDefaultView(string $view = ''): Page
+	public function setDefaultView(string $view = ''): PageInterface
 	{
 		$this->defaultView = $view;
 
 		return $this;
 	}
 
-	public function render(string $view = null, array $data = null): Page
+	public function render(string $view = null, array $data = null): PageInterface
 	{
 		\log_message('debug', 'page::render::' . $view);
 
 		$view = ($view) ?? $this->defaultView;
 
 		if ($view == null) {
-			throw new \Exception('No View provided for ' . __METHOD__ . '.');
+			throw new Exception('No View provided for ' . __METHOD__ . '.');
 		}
 
 		/* this is going to be the "main" section */
@@ -98,7 +171,7 @@ class Page implements PageInterface
 
 	public function view(string $view_file = null, array $data = null, $return = true)
 	{
-		$data = (is_array($data)) ? array_merge($this->dataService->all(), $data) : $this->dataService->all();
+		$data = (is_array($data)) ? array_merge($this->viewData, $data) : $this->viewData;
 
 		if (!isset($this->views[$view_file])) {
 			throw new Exception('View "' . $view_file . '" Not Found.');
@@ -109,7 +182,7 @@ class Page implements PageInterface
 		$buffer = $this->_view($view_file, $data);
 
 		if (is_string($return)) {
-			$this->data($return, $buffer);
+			$this->viewData[$return] = $buffer;
 		}
 
 		return ($return === true) ? $buffer : $this;
@@ -135,20 +208,7 @@ class Page implements PageInterface
 		return ($__returned !== null) ? $__returned : $__output;
 	}
 
-	public function data($name, $value = null): Page
-	{
-		if (is_array($name)) {
-			foreach ($name as $index => $value) {
-				$this->dataService->$index = $value;
-			}
-		} else {
-			$this->dataService->$name = $value;
-		}
-
-		return $this;
-	}
-
-	public function extend(string $template = null): Page
+	public function extend(string $template = null): PageInterface
 	{
 		if ($this->extending) {
 			throw new \Exception('You are already extending "' . $this->extending . '" therefore we cannot extend "' . $template . '".');
@@ -161,12 +221,12 @@ class Page implements PageInterface
 
 	public function linkHtml(string $file): string
 	{
-		return $this->ary2element('link', array_merge($this->config['link_attributes'], ['href' => $file]));
+		return $this->ary2element('link', array_merge($this->link_attributes, ['href' => $file]));
 	}
 
 	public function scriptHtml(string $file): string
 	{
-		return $this->ary2element('script', array_merge($this->config['script_attributes'], ['src' => $file]));
+		return $this->ary2element('script', array_merge($this->script_attributes, ['src' => $file]));
 	}
 
 	public function ary2element(string $element, array $attributes, string $content = ''): string
@@ -197,7 +257,7 @@ class Page implements PageInterface
 		return rtrim($atts, ',');
 	}
 
-	public function meta($attr, string $name = null, string $content = null, int $priority = PAGE::PRIORITY_NORMAL): Page
+	public function meta($attr, string $name = null, string $content = null, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
 	{
 		if (is_array($attr)) {
 			extract($attr);
@@ -206,27 +266,27 @@ class Page implements PageInterface
 		return $this->add('meta', '<meta ' . $attr . '="' . $name . '"' . (($content) ? ' content="' . $content . '"' : '') . '>' . PHP_EOL, $priority);
 	}
 
-	public function script(string $script, int $priority = PAGE::PRIORITY_NORMAL): Page
+	public function script(string $script, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
 	{
 		return $this->add('script', $script . PHP_EOL, $priority);
 	}
 
-	public function domready(string $script, int $priority = PAGE::PRIORITY_NORMAL): Page
+	public function domready(string $script, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
 	{
 		return $this->add('domready', $script . PHP_EOL, $priority);
 	}
 
-	public function title(string $title = '', int $priority = PAGE::PRIORITY_NORMAL): Page
+	public function title(string $title = '', int $priority = PAGE::PRIORITY_NORMAL): PageInterface
 	{
 		return $this->add('title', $title, $priority);
 	}
 
-	public function style(string $style, int $priority = PAGE::PRIORITY_NORMAL): Page
+	public function style(string $style, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
 	{
 		return $this->add('style', $style . PHP_EOL, $priority);
 	}
 
-	public function js($file = '', int $priority = PAGE::PRIORITY_NORMAL): Page
+	public function js($file = '', int $priority = PAGE::PRIORITY_NORMAL): PageInterface
 	{
 		if (is_array($file)) {
 			foreach ($file as $f) {
@@ -238,7 +298,7 @@ class Page implements PageInterface
 		return $this->add('js', $this->scriptHtml($file) . PHP_EOL, $priority);
 	}
 
-	public function css($file = '', int $priority = PAGE::PRIORITY_NORMAL): Page
+	public function css($file = '', int $priority = PAGE::PRIORITY_NORMAL): PageInterface
 	{
 		if (is_array($file)) {
 			foreach ($file as $f) {
@@ -250,7 +310,7 @@ class Page implements PageInterface
 		return $this->add('css', $this->linkHtml($file) . PHP_EOL, $priority);
 	}
 
-	public function jsVariable(string $key, $value, int $priority = PAGE::PRIORITY_NORMAL, bool $raw = false): Page
+	public function jsVariable(string $key, $value, int $priority = PAGE::PRIORITY_NORMAL, bool $raw = false): PageInterface
 	{
 		if ($raw) {
 			$value = 'var ' . $key . '=' . $value . ';';
@@ -261,7 +321,7 @@ class Page implements PageInterface
 		return $this->add('jsVariables', $value, $priority);
 	}
 
-	public function jsVariables(array $array): Page
+	public function jsVariables(array $array): PageInterface
 	{
 		foreach ($array as $k => $v) {
 			$this->jsVariable($k, $v);
@@ -270,13 +330,14 @@ class Page implements PageInterface
 		return $this;
 	}
 
-	public function bodyClass($class, int $priority = PAGE::PRIORITY_NORMAL): Page
+	public function bodyClass($class, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
 	{
 		return (is_array($class)) ? $this->_bodyClass($class, $priority) : $this->_bodyClass(explode(' ', $class), $priority);
 	}
 
-	public function add(string $name, string $value, int $priority = PAGE::PRIORITY_NORMAL, bool $prevent_duplicates = true): Page
+	public function add(string $name, string $value, int $priority = PAGE::PRIORITY_NORMAL, bool $prevent_duplicates = true): PageInterface
 	{
+		$name = $this->pageVariablePrefix . $name;
 		$key = md5($value);
 
 		if (!isset($this->variables[$name][3][$key]) || !$prevent_duplicates) {
@@ -289,46 +350,7 @@ class Page implements PageInterface
 		return $this;
 	}
 
-	public function __call(string $name, array $arguments = [])
-	{
-		if ($name == 'var') {
-			return $this->_var($arguments[0]);
-		}
-
-		throw new \Exception('Page Method "' . $name . '" unsupported.');
-	}
-
-	public function _var(string $name): string
-	{
-		$html = $this->dataService->$name;
-
-		/* if it's empty than maybe is it a page variable? */
-		if (empty($html)) {
-			$get = $this->pageVariablePrefix . $name;
-
-			$html = $this->dataService->$get;
-		}
-
-		/* does this variable key exist */
-		if (isset($this->variables[$name])) {
-			/* has it already been sorted */
-			if (!$this->variables[$name][0]) {
-				/* no we must sort it */
-				array_multisort($this->variables[$name][1], SORT_DESC, SORT_NUMERIC, $this->variables[$name][2]);
-
-				/* mark it as sorted */
-				$this->variables[$name][0] = true;
-			}
-
-			foreach ($this->variables[$name][2] as $append) {
-				$html .= $append;
-			}
-		}
-
-		return trim($html);
-	}
-
-	protected function _bodyClass(array $class, int $priority): Page
+	protected function _bodyClass(array $class, int $priority): PageInterface
 	{
 		foreach ($class as $c) {
 			$this->add('body_class', ' ' . strtolower(trim($c)), $priority);

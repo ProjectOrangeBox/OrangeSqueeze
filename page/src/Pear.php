@@ -39,6 +39,7 @@ class Pear implements PearInterface
 			throw new IncorrectInterfaceException('PearInterface');
 		}
 
+		/* using call_user_func_array because arguments is undetermined */
 		return call_user_func_array([$plugin, 'render'], $arguments);
 	}
 } /* end class */

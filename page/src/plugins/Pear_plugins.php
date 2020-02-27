@@ -2,15 +2,6 @@
 
 namespace projectorangebox\page\plugins;
 
-/**
- * Orange
- *
- * An open source extensions for CodeIgniter 3.x
- *
- * This content is released under the MIT License (MIT)
- * Copyright (c) 2014 - 2019, Project Orange Box
- */
-
 use Pear;
 use projectorangebox\page\PearAbstract;
 
