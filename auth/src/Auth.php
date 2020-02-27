@@ -112,34 +112,15 @@ class Auth implements AuthInterface
 
 	protected function getUser(string $login)
 	{
-		return $this->query('select `id`,`' . $this->password_column . '`,`' . $this->is_active_column . '` from `' . $this->table . '` where ' . $this->username_column . ' = :login limit 1', [':login' => $login], false);
+		$query = $this->db->prepare('select `id`,`' . $this->password_column . '`,`' . $this->is_active_column . '` from `' . $this->table . '` where ' . $this->username_column . ' = :login limit 1');
+		$query->execute([':login' => $login]);
+		$row = $query->fetch(PDO::FETCH_ASSOC);
+
+		return ($row) ? $row : false;
 	}
 
 	public function refresh(): bool
 	{
 		return true;
-	}
-
-	/* PDO simple as beans select query wrapper */
-	protected function query(string $sql, array $execute = [], $onEmpty = false)
-	{
-		$query = $this->db->prepare($sql);
-
-		$query->execute($execute);
-
-		$count = $query->rowCount();
-
-		switch ($count) {
-			case 0:
-				$return = $onEmpty;
-				break;
-			case 1:
-				$return = $query->fetch(PDO::FETCH_ASSOC);
-				break;
-			default:
-				$return = $query;
-		}
-
-		return $return;
 	}
 } /* end class */
