@@ -55,18 +55,8 @@ class App implements AppInterface
 		/* set the most basic exception handler inside common.php file */
 		set_exception_handler('showException');
 
-		/* if there is a env file merge it with the global $_ENV */
-		if (FS::file_exists('.env')) {
-			$_ENV = array_merge($_ENV, parse_ini_file(FS::resolve('.env'), true, INI_SCANNER_TYPED));
-		}
-
 		/* use default */
 		$config['services config file'] = $config['services config file'] ?? '/config/services.php';
-
-		/* test if services config file is set */
-		if (!isset($config['services config file'])) {
-			throw new Exception('Services configuration file location is not set.');
-		}
 
 		/* Is the services configuration file there? */
 		if (!FS::file_exists($config['services config file'])) {
@@ -83,11 +73,6 @@ class App implements AppInterface
 
 		/* use default */
 		$config['containerClass'] = $config['containerClass'] ?? '\projectorangebox\container\Container';
-
-		/* test if container class is not set */
-		if (!isset($config['containerClass'])) {
-			throw new Exception('containerClass is not set.');
-		}
 
 		$containerClass = $config['containerClass'];
 

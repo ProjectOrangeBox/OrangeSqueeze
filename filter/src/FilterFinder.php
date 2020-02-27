@@ -24,7 +24,7 @@ class FilterFinder
 		// namespace projectorangebox\validation\rules;
 		// class alpha_dash extends
 
-		return '\\' . trim(self::between('namespace', ';', $contents)) . '\\' . trim(self::between('class', 'extends', $contents));
+		return '\\' . trim(self::between('namespace ', ';', $contents)) . '\\' . trim(self::between('class ', ' extends ', $contents));
 	}
 
 	static public function between($start, $end, $string)

@@ -1,8 +1,8 @@
 <?php
 
-namespace projectorangebox\validation;
+namespace projectorangebox\page;
 
-class RuleFinder
+class PluginFinder
 {
 	static protected $found = [];
 
@@ -39,4 +39,4 @@ class RuleFinder
 
 		return substr($string, $ini, $len);
 	}
-}
+} /* end class */

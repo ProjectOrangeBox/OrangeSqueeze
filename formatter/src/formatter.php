@@ -71,6 +71,8 @@ class formatter implements formatterInterface
 		return ($this->send) ? $this->_display($array, $view) : $this->_format($array, $view);
 	}
 
+	/* protected */
+
 	protected function type(string $type, string $charset = 'UTF-8'): void
 	{
 		if (!isset($this->typeMap[$type])) {
@@ -128,21 +130,23 @@ class formatter implements formatterInterface
 	 * @param mixed array
 	 * @return string
 	 */
-	protected function _view(string $_mvc_view_name, array $_mvc_view_data = []): string
+	protected function _view(string $__path, array $__data = []): string
 	{
-		/* what file are we looking for? */
-		$_mvc_view_file = FS::resolve($_mvc_view_name);
+		extract($__data, EXTR_PREFIX_INVALID, '_');
 
-		/* extract out view data and make it in scope */
-		extract($_mvc_view_data);
-
-		/* start output cache */
 		ob_start();
 
-		/* load in view (which now has access to the in scope view data */
-		require $_mvc_view_file;
+		$__returned = include \FS::resolve($__path);
 
-		/* capture cache and return */
-		return ob_get_clean();
+		/* if nothing returned than 1 is returned */
+		if ($__returned === 1) {
+			$__returned = null;
+		}
+
+		$__output = ob_get_clean();
+
+		ob_end_clean();
+
+		return ($__returned !== null) ? $__returned : $__output;
 	}
 } /* end class */
