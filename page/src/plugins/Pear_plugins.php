@@ -28,7 +28,13 @@ class Pear_plugins extends PearAbstract
 			/* setup default of no parameters */
 			$parameters = [];
 
-			/* do we have parameters if so split them out */
+			/**
+			 * do we have parameters if so split them out
+			 *
+			 * foobar(123,cats)
+			 * foobar
+			 *
+			 */
 			if (preg_match('/^(?<plugin>.*?)\((?<parameters>.*?)\)$/', $plugin, $matches)) {
 				$plugin  = $matches['plugin'];
 				$parameters = explode(',', $matches['parameters']);
