@@ -7,7 +7,7 @@ use projectorangebox\models\MedooDatabaseModel;
 
 class UserModel extends MedooDatabaseModel implements UserModelInterface
 {
-	protected $table = 'orange_users';
+	protected $tablename = 'orange_users';
 	protected $table_join = 'orange_user_role';
 	protected $rules = [
 		'id' => ['field' => 'id', 'label' => 'Id', 'rules' => 'required|integer|max_length[10]|less_than[4294967295]|filter_int[10]'],
@@ -24,16 +24,16 @@ class UserModel extends MedooDatabaseModel implements UserModelInterface
 		'update' => 'id,username,email,password,dashboard_url,is_active,meta',
 	];
 
-	public function create(array $columns): bool
+	public function insert(array $columns): int
 	{
 		if (isset($columns['password'])) {
 			$columns['password'] = $this->passwordHash($columns['password']);
 		}
 
-		return parent::create($columns);
+		return parent::insert($columns);
 	}
 
-	public function update(array $columns): bool
+	public function update(array $columns): int
 	{
 		if (isset($columns['password'])) {
 			$columns['password'] = $this->passwordHash($columns['password']);
@@ -42,13 +42,14 @@ class UserModel extends MedooDatabaseModel implements UserModelInterface
 		return parent::update($columns);
 	}
 
-	public function delete(string $id): bool
+	public function delete($id): int
 	{
 		if (parent::delete($id)) {
 			$this->db->delete($this->table_join, ['user_id' => $id]);
+			$this->captureDBError();
 		}
 
-		return $this->captureDBError();
+		return ($this->errorCode() > 0);
 	}
 
 	protected function passwordHash(string $password): string
@@ -70,10 +71,11 @@ class UserModel extends MedooDatabaseModel implements UserModelInterface
 
 		foreach ($roleIds as $roleId) {
 			$this->db->insert($this->table_join, ['role_id' => $roleId, 'user_id' => $userId]);
+			$this->captureDBError();
 		}
 
 		$this->db->commit();
 
-		return $this->captureDBError();
+		return ($this->errorCode() > 0);
 	}
-}
+} /* end class */

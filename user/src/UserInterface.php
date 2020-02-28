@@ -5,15 +5,16 @@ namespace projectorangebox\user;
 interface UserInterface
 {
 	public function __construct(array $config);
+	public function __get(string $name); /* mixed */
 	public function setUserId(int $userId): bool;
 	public function setUserGuest(): bool;
 
-	public function roles(): array;
+	/* roles */
 	public function hasRole(int $role): bool;
 	public function hasRoles(array $roles): bool;
 	public function hasOneRoleOf(array $roles): bool;
 
-	public function permissions(): array;
+	/* permissions */
 	public function can(string $permission): bool;
 	public function cannot(string $permission): bool;
 	public function hasPermissions(array $permissions): bool;

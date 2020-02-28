@@ -9,30 +9,28 @@ use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 class DataModel
 {
 	protected $config;
-	protected $validatorService;
+	protected $validateService;
 
-	protected $errors = [];
+	protected $errorsArray = [];
 	protected $errorCode = 0;
 
 	public function __construct(array $config = [])
 	{
 		$this->config = $config;
 
-		$this->config['validate service name'] = $this->config['validate service name'] ?? 'validate';
+		$this->validateService = $config['validateService'];
+
+		if (!($this->validateService instanceof ValidateInterface)) {
+			throw new IncorrectInterfaceException('ValidateInterface');
+		}
 	}
 
 	protected function validate(array &$data, string $ruleSets = null): bool
 	{
 		$this->errorCode = 0;
 
-		$this->validatorService = service($this->config['validate service name']);
-
-		if (!($this->validatorService instanceof ValidateInterface)) {
-			throw new IncorrectInterfaceException($this->config['validate service name']);
-		}
-
 		/* Validation Errors */
-		$this->errors = $this->validatorService->rules($this->getRules($ruleSets, $this->rules), $data)->errors();
+		$this->errorsArray = $this->validateService->rules($this->getRuleSet($ruleSets, $this->rules), $data)->errors();
 
 		if (!$this->success()) {
 			/* use standard http codes - 406 not acceptable */
@@ -42,9 +40,14 @@ class DataModel
 		return $this->success();
 	}
 
+	public function onlyColumns(array $columns, array $match)
+	{
+		return \array_intersect_key($columns, $match);
+	}
+
 	public function errors(): array
 	{
-		return $this->errors;
+		return $this->errorsArray;
 	}
 
 	public function errorCode(): int
@@ -54,21 +57,21 @@ class DataModel
 
 	public function success(): bool
 	{
-		return (count($this->errors) == 0);
+		return (count($this->errorsArray) == 0);
 	}
 
-	protected function getRules(string $tests = null, array $rules): array
+	protected function getRuleSet(string $set = null, array $rules): array
 	{
-		$tests = ($tests) ? explode(',', $tests) : array_keys($rules);
+		$sets = ($set) ? explode(',', $set) : array_keys($rules);
 
 		$ary = [];
 
-		foreach ($tests as $test) {
-			if (!array_key_exists($test, $this->rules)) {
-				throw new Exception('No Rule found for "' . $test . '".');
+		foreach ($sets as $name) {
+			if (!array_key_exists($name, $this->rules)) {
+				throw new Exception('No Rule found for "' . $name . '".');
 			}
 
-			$ary[$test] = $this->rules[$test];
+			$ary[$name] = $this->rules[$name];
 		}
 
 		return $ary;

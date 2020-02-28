@@ -2,30 +2,38 @@
 
 namespace projectorangebox\models;
 
-use Exception;
+use projectorangebox\common\exceptions\mvc\ServiceNotFoundException;
+use projectorangebox\common\exceptions\php\ClassNotFoundException;
 
 class Models implements ModelsInterface
 {
 	protected $models = [];
+	protected $config;
 
 	public function __construct(array $config)
 	{
-		foreach ($config['models'] as $modelName => $modelClass) {
-			if (!\class_exists($modelClass, true)) {
-				throw new Exception('Model "' . $modelName . '" class "' . $modelClass . '" not found.');
-			}
-
-			$this->models[strtolower($modelName)] = new $modelClass($config);
-		}
+		$this->config = &$config;
 	}
 
 	public function __get(string $name)
 	{
-		if (!isset($this->models[strtolower($name)])) {
-			throw new Exception('Model "' . $name . '" not found.');
+		$name = strtolower($name);
+
+		if (!isset($this->models[$name])) {
+			if (!isset($this->config['models'][$name])) {
+				throw new ServiceNotFoundException($name);
+			}
+
+			$modelClass = $this->config['models'][$name];
+
+			if (!\class_exists($modelClass, true)) {
+				throw new ClassNotFoundException($modelClass);
+			}
+
+			$this->models[$name] = new $modelClass($this->config);
 		}
 
-		return $this->models[strtolower($name)];
+		return $this->models[$name];
 	}
 
 	public function has(string $name): bool

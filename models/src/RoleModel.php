@@ -6,7 +6,7 @@ use projectorangebox\models\MedooDatabaseModel;
 
 class RoleModel extends MedooDatabaseModel implements RoleModelInterface
 {
-	protected $table = 'orange_roles';
+	protected $tablename = 'orange_roles';
 	protected $table_join = 'orange_role_permission';
 	protected $rules = [
 		'id' => ['field' => 'id', 'label' => 'Id', 'rules' => 'required|integer|max_length[10]|less_than[4294967295]|filter_int[10]'],
@@ -18,7 +18,7 @@ class RoleModel extends MedooDatabaseModel implements RoleModelInterface
 		'update' => 'id,name,description',
 	];
 
-	public function delete(string $id): bool
+	public function delete($id): int
 	{
 		if (parent::delete($id)) {
 			$this->db->delete($this->table_join, ['role_id' => $id]);

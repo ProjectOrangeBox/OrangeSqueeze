@@ -56,12 +56,17 @@ class formatter implements formatterInterface
 		$this->contentType = $config['content type'] ?? $this->contentType;
 	}
 
-	public function send(int $statusCode, string $type, string $charset = 'UTF-8'): formatterInterface
+	public function send(int $statusCode = null, string $type = null, string $charset = 'UTF-8'): formatterInterface
 	{
 		$this->send = true;
 
-		$this->code($statusCode);
-		$this->type($type, $charset);
+		if ($statusCode) {
+			$this->code($statusCode);
+		}
+
+		if ($type) {
+			$this->type($type, $charset);
+		}
 
 		return $this;
 	}

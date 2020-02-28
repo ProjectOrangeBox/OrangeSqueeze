@@ -6,7 +6,7 @@ use projectorangebox\models\MedooDatabaseModel;
 
 class PermissionModel extends MedooDatabaseModel implements PermissionModelInterface
 {
-	protected $table = 'orange_permissions';
+	protected $tablename = 'orange_permissions';
 	protected $rules = [
 		'id' => ['field' => 'id', 'label' => 'Id', 'rules' => 'required|integer|max_length[10]|less_than[4294967295]|filter_int[10]'],
 		'key' => ['field' => 'key', 'label' => 'Key', 'rules' => 'required|trim|projectorangebox\auth\models\aclUnique[permissions,key]'],
