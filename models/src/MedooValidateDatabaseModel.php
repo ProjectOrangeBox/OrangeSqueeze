@@ -3,10 +3,8 @@
 namespace projectorangebox\models;
 
 use projectorangebox\models\MedooDatabaseModel;
-use projectorangebox\validation\ValidateInterface;
-use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
-class MedooValidateDatabaseModel extends MedooDatabaseModel implements DatabaseModelInterface
+class MedooValidateDatabaseModel extends MedooDatabaseModel
 {
 	public function insert(array $columns): int
 	{

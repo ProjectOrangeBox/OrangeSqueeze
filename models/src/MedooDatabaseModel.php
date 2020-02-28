@@ -6,6 +6,7 @@ use PDO;
 use Exception;
 use Medoo\Medoo;
 use projectorangebox\models\DatabaseModel;
+use projectorangebox\models\DatabaseModelInterface;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class MedooDatabaseModel extends DatabaseModel implements DatabaseModelInterface
