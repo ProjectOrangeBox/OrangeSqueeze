@@ -23,4 +23,8 @@ interface DatabaseModelInterface
 	public function lastQuery(): string;
 	public function orderBy($column, $value = 'ASC'): DatabaseModelInterface;
 	public function limit(int $limit): DatabaseModelInterface;
+
+	public function hasError(): bool;
+	public function errorCode(): int;
+	public function errors(): array;
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace projectorangebox\models;
+namespace projectorangebox\models\models;
 
-use projectorangebox\models\MedooDatabaseModel;
+use projectorangebox\models\MedooValidateDatabaseModel;
 
-class PermissionModel extends MedooDatabaseModel implements PermissionModelInterface
+class PermissionModel extends MedooValidateDatabaseModel implements PermissionModelInterface
 {
 	protected $tablename = 'orange_permissions';
 	protected $rules = [

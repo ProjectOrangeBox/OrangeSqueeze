@@ -1,11 +1,10 @@
 <?php
 
-namespace projectorangebox\models;
+namespace projectorangebox\models\models;
 
-use Exception;
-use projectorangebox\models\MedooDatabaseModel;
+use projectorangebox\models\MedooValidateDatabaseModel;
 
-class UserModel extends MedooDatabaseModel implements UserModelInterface
+class UserModel extends MedooValidateDatabaseModel implements UserModelInterface
 {
 	protected $tablename = 'orange_users';
 	protected $table_join = 'orange_user_role';
@@ -46,7 +45,7 @@ class UserModel extends MedooDatabaseModel implements UserModelInterface
 	{
 		if (parent::delete($id)) {
 			$this->db->delete($this->table_join, ['user_id' => $id]);
-			$this->captureDBError();
+			$this->captureErrors();
 		}
 
 		return ($this->errorCode() > 0);
@@ -71,11 +70,11 @@ class UserModel extends MedooDatabaseModel implements UserModelInterface
 
 		foreach ($roleIds as $roleId) {
 			$this->db->insert($this->table_join, ['role_id' => $roleId, 'user_id' => $userId]);
-			$this->captureDBError();
+			$this->captureErrors();
 		}
 
 		$this->db->commit();
 
-		return ($this->errorCode() > 0);
+		return $this->hasError();
 	}
 } /* end class */

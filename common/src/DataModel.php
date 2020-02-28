@@ -32,12 +32,12 @@ class DataModel
 		/* Validation Errors */
 		$this->errorsArray = $this->validateService->rules($this->getRuleSet($ruleSets, $this->rules), $data)->errors();
 
-		if (!$this->success()) {
+		if ($this->hasError()) {
 			/* use standard http codes - 406 not acceptable */
 			$this->errorCode = 406;
 		}
 
-		return $this->success();
+		return !$this->hasError();
 	}
 
 	public function onlyColumns(array $columns, array $match)
@@ -55,9 +55,9 @@ class DataModel
 		return $this->errorCode;
 	}
 
-	public function success(): bool
+	public function hasError(): bool
 	{
-		return (count($this->errorsArray) == 0);
+		return (count($this->errorsArray) > 0);
 	}
 
 	protected function getRuleSet(string $set = null, array $rules): array

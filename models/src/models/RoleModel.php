@@ -1,10 +1,10 @@
 <?php
 
-namespace projectorangebox\models;
+namespace projectorangebox\models\models;
 
-use projectorangebox\models\MedooDatabaseModel;
+use projectorangebox\models\MedooValidateDatabaseModel;
 
-class RoleModel extends MedooDatabaseModel implements RoleModelInterface
+class RoleModel extends MedooValidateDatabaseModel implements RoleModelInterface
 {
 	protected $tablename = 'orange_roles';
 	protected $table_join = 'orange_role_permission';
@@ -21,10 +21,11 @@ class RoleModel extends MedooDatabaseModel implements RoleModelInterface
 	public function delete($id): int
 	{
 		if (parent::delete($id)) {
-			$this->db->delete($this->table_join, ['role_id' => $id]);
+			$rows = $this->db->delete($this->table_join, ['role_id' => $id]);
+			$this->captureErrors();
 		}
 
-		return $this->captureDBError();
+		return $rows;
 	}
 
 	public function relink(int $roleId, array $permissionIds): bool
@@ -39,6 +40,6 @@ class RoleModel extends MedooDatabaseModel implements RoleModelInterface
 
 		$this->db->commit();
 
-		return $this->captureDBError();
+		return $this->hasError();
 	}
 }

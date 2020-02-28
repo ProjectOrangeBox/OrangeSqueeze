@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\models;
+namespace projectorangebox\models\models;
 
 use projectorangebox\models\MedooValidateDatabaseModel;
 
