@@ -9,7 +9,7 @@ class DatabaseModel extends DataModel
 	protected $db;
 	protected $tablename;
 	protected $primaryKey = 'id';
-	protected $connection = 'default';
+	protected $connection = 'default database';
 
 	public function __construct($db, array $config)
 	{

@@ -16,7 +16,6 @@ class Page implements PageInterface
 {
 	use DataTrait;
 	use ElementsTrait;
-	use FormattersTrait;
 
 	const PRIORITY_LOWEST = 10;
 	const PRIORITY_LOW = 20;
@@ -67,14 +66,12 @@ class Page implements PageInterface
 		$page_configs = $config[$this->pageVariablePrefix];
 
 		if (is_array($page_configs)) {
-			foreach ($page_configs as $method => $parameters) {
+			foreach ($page_configs as $method => $calls) {
 				if (method_exists($this, $method)) {
-					if (is_array($parameters)) {
-						foreach ($parameters as $p) {
-							call_user_func([$this, $method], $p);
-						}
-					} else {
-						call_user_func([$this, $method], $parameters);
+					foreach ($calls as $parameters) {
+						$parameters = (array) $parameters;
+
+						call_user_func_array([$this, $method], $parameters);
 					}
 				}
 			}

@@ -141,7 +141,7 @@ class formatter implements formatterInterface
 
 		ob_start();
 
-		$__returned = include \FS::resolve($__path);
+		$__returned = include FS::resolve($__path);
 
 		/* if nothing returned than 1 is returned */
 		if ($__returned === 1) {
