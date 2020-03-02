@@ -1,5 +1,5 @@
 {
-	"name": "projectorangebox/formatter",
+	"name": "projectorangebox/viewresponse",
 	"authors": [{
 		"name": "Don Myers",
 		"email": "donmyers@me.com",
@@ -9,7 +9,7 @@
 	"description": "View formatter with request auto detection and responses if nessesary.",
 	"autoload": {
 		"psr-4": {
-			"projectorangebox\\formatter\\": "src"
+			"projectorangebox\\viewresponse\\": "src"
 		}
 	}
 }

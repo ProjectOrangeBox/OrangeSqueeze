@@ -2,6 +2,7 @@
 
 namespace projectorangebox\view\parsers;
 
+use FS;
 use projectorangebox\view\parsers\ParserInterface;
 
 class Php implements ParserInterface
@@ -44,7 +45,7 @@ class Php implements ParserInterface
 	{
 		$path = $this->config['cache folder'] . '/' . md5($string);
 
-		\FS::file_put_contents($path, $string, FILE_APPEND | LOCK_EX);
+		FS::file_put_contents($path, $string, FILE_APPEND | LOCK_EX);
 
 		return $this->_parse($path, $data);
 	}
@@ -57,7 +58,7 @@ class Php implements ParserInterface
 
 		ob_start();
 
-		$__returned = include \FS::resolve($__path);
+		$__returned = include FS::resolve($__path);
 
 		/* if nothing returned than 1 is returned */
 		if ($__returned === 1) {
