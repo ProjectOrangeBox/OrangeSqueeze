@@ -66,12 +66,10 @@ class Page implements PageInterface
 		$page_configs = $config[$this->pageVariablePrefix];
 
 		if (is_array($page_configs)) {
-			foreach ($page_configs as $method => $calls) {
+			foreach ($page_configs as $method => $individualCalls) {
 				if (method_exists($this, $method)) {
-					foreach ($calls as $parameters) {
-						$parameters = (array) $parameters;
-
-						call_user_func_array([$this, $method], $parameters);
+					foreach ($individualCalls as $parameters) {
+						call_user_func_array([$this, $method], (array) $parameters);
 					}
 				}
 			}
