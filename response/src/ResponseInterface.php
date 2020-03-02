@@ -4,6 +4,7 @@ namespace projectorangebox\response;
 
 interface ResponseInterface
 {
+	public function __construct(array $config);
 	public function get(): string;
 	public function set(string $output): ResponseInterface;
 	public function append(string $output): ResponseInterface;

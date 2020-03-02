@@ -6,6 +6,13 @@ class Response implements ResponseInterface
 {
 	/* storage for final output */
 	protected $finalOutput = '';
+	protected $headerSend = false;
+	protected $http_response_code = [];
+	protected $header = [];
+
+	public function __construct(array $config)
+	{
+	}
 
 	/* get the current response output buffer */
 	public function get(): string
@@ -32,8 +39,12 @@ class Response implements ResponseInterface
 	/* echo final output */
 	public function display(string $output = null, int $status_code = 0): void
 	{
+		if (!$this->headerSend) {
+			$this->sendHeader();
+		}
+
 		if ($output) {
-			$this->finalOutput = $output;
+			$this->finalOutput .= $output;
 		}
 
 		echo $this->finalOutput;
@@ -44,7 +55,7 @@ class Response implements ResponseInterface
 	/* Set the HTTP response code */
 	public function respondsCode(int $code): ResponseInterface
 	{
-		http_response_code($code);
+		$this->http_response_code[$code] = $code;
 
 		return $this;
 	}
@@ -59,7 +70,9 @@ class Response implements ResponseInterface
 	/* Send a raw HTTP header */
 	public function header(string $string, bool $replace = true, int $http_response_code = null): ResponseInterface
 	{
-		header($string, $replace, $http_response_code);
+		$key = md5(\json_encode(\func_get_args()));
+
+		$this->header[$key] = [$string, $replace, $http_response_code];
 
 		return $this;
 	}
@@ -68,5 +81,18 @@ class Response implements ResponseInterface
 	public function exit(int $status = 0): void
 	{
 		exit($status);
+	}
+
+	protected function sendHeader()
+	{
+		foreach ($this->http_response_code as $code) {
+			http_response_code($code);
+		}
+
+		foreach ($this->header as $args) {
+			header($args[0], $args[1], $args[2]);
+		}
+
+		$this->headerSend = true;
 	}
 } /* end class */

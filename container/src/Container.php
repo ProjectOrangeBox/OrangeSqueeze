@@ -34,7 +34,7 @@ class Container implements ContainerInterface
 	 * @param mixed $serviceName
 	 * @return mixed
 	 */
-	public function __get($serviceName)
+	public function __get(string $serviceName)
 	{
 		return $this->get($serviceName);
 	}
@@ -47,7 +47,7 @@ class Container implements ContainerInterface
 	 * @param mixed $serviceName
 	 * @return bool
 	 */
-	public function __isset($serviceName): bool
+	public function __isset(string $serviceName): bool
 	{
 		return $this->has($serviceName);
 	}
@@ -61,7 +61,7 @@ class Container implements ContainerInterface
 	 * @param mixed $value
 	 * @return void
 	 */
-	public function __set($serviceName, $value): void
+	public function __set(string $serviceName, $value): void
 	{
 		$this->register($serviceName, $value[0], $value[1]);
 	}
@@ -74,7 +74,7 @@ class Container implements ContainerInterface
 	 * @param mixed $serviceName
 	 * @return void
 	 */
-	public function __unset($serviceName): void
+	public function __unset(string $serviceName): void
 	{
 		$this->remove($serviceName);
 	}
@@ -87,8 +87,6 @@ class Container implements ContainerInterface
 	 */
 	public function get(string $serviceName)
 	{
-		$serviceName = strtolower($serviceName);
-
 		/* Is this service even registered? */
 		if (!isset($this->registeredServices[$serviceName])) {
 			/* fatal */
@@ -107,7 +105,7 @@ class Container implements ContainerInterface
 	 */
 	public function has(string $serviceName): bool
 	{
-		return isset($this->registeredServices[strtolower($serviceName)]);
+		return isset($this->registeredServices[$serviceName]);
 	}
 
 	/**
@@ -120,7 +118,7 @@ class Container implements ContainerInterface
 	 */
 	public function register(string $serviceName, \closure $closure, bool $singleton = true): void
 	{
-		$this->registeredServices[strtolower($serviceName)] = ['closure' => $closure, 'singleton' => $singleton, 'reference' => null];
+		$this->registeredServices[$serviceName] = ['closure' => $closure, 'singleton' => $singleton, 'reference' => null];
 	}
 
 	/**
@@ -131,7 +129,7 @@ class Container implements ContainerInterface
 	 */
 	public function remove(string $serviceName): void
 	{
-		unset($this->registeredServices[strtolower($serviceName)]);
+		unset($this->registeredServices[$serviceName]);
 	}
 
 	/**

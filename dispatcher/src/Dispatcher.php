@@ -87,7 +87,16 @@ class Dispatcher implements DispatcherInterface
 		$parameters = $this->replace($parameters);
 
 		/* call the controller method */
-		$output = \call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')));
+
+		$output = '';
+
+		ob_start();
+
+		$output .= \call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')));
+
+		$output .= ob_get_clean();
+
+		ob_end_clean();
 
 		if ($output) {
 			$this->response->append((string) $output);
