@@ -24,7 +24,7 @@ class Ci implements ParserInterface
 	}
 
 	/* string|array */
-	public function set_delimiters($l = '{{', string $r = '}}'): ParserInterface
+	public function setDelimiters($l = '{{', string $r = '}}'): ParserInterface
 	{
 		/* set delimiters */
 		$this->delimiters = (is_array($l)) ? $l : [$l, $r];

@@ -136,7 +136,7 @@ class Handlebars implements ParserInterface
 	* @param string
 	* @return object (this)
 	*/
-	public function set_delimiters(/* string|array */$l = '{{', string $r = '}}'): ParserInterface
+	public function setDelimiters(/* string|array */$l = '{{', string $r = '}}'): ParserInterface
 	{
 		/* set delimiters */
 		$this->delimiters = (is_array($l)) ? $l : [$l, $r];

@@ -25,7 +25,7 @@ class Markdown implements ParserInterface
 		FS::mkdir($this->cacheFolder);
 	}
 
-	public function set_delimiters(/* string|array */$l = '{{', string $r = '}}'): ParserInterface
+	public function setDelimiters(/* string|array */$l = '{{', string $r = '}}'): ParserInterface
 	{
 		/* set delimiters */
 		$this->delimiters = (is_array($l)) ? $l : [$l, $r];
