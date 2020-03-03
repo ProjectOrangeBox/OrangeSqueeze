@@ -24,7 +24,6 @@ class Page implements PageInterface
 
 	protected $variables = [];
 	protected $defaultView = '';
-	protected $responseService;
 	protected $dataService;
 	protected $pageVariablePrefix = '';
 	protected $extending = false;
@@ -37,12 +36,6 @@ class Page implements PageInterface
 	public function __construct(array &$config)
 	{
 		\log_message('info', __METHOD__);
-
-		$this->responseService = $config['responseService'];
-
-		if (!($this->responseService instanceof ResponseInterface)) {
-			throw new IncorrectInterfaceException('ResponseInterface');
-		}
 
 		$this->link_attributes = $config['link attributes'] ?? ['href' => '', 'type' => 'text/css', 'rel' => 'stylesheet'];
 		$this->script_attributes = $config['script attributes'] ?? ['src' => '', 'type' => 'text/javascript', 'charset' => 'utf-8'];
@@ -93,7 +86,7 @@ class Page implements PageInterface
 		return $this;
 	}
 
-	public function render(string $view = null, array $data = null): PageInterface
+	public function render(string $view = null, array $data = null): string
 	{
 		\log_message('info', 'page::render::' . $view);
 
@@ -110,10 +103,7 @@ class Page implements PageInterface
 			$viewContent = $this->view($this->extending);
 		}
 
-		/* append to the output responds */
-		$this->responseService->append($viewContent);
-
-		return $this;
+		return $viewContent;
 	}
 
 	public function view(string $viewFile = null, array $data = null, $return = true)
