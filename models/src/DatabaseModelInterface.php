@@ -5,7 +5,7 @@ namespace projectorangebox\models;
 interface DatabaseModelInterface
 {
 
-	public function __construct(array $config);
+	public function __construct(array &$config);
 	public function get($primaryId);
 	public function getBy(array $where);
 	public function getMany();

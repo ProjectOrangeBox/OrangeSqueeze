@@ -10,7 +10,7 @@ class App implements AppInterface
 {
 	protected static $container;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
 		/* set End Of Line based on request type */
 		define('EOL', (PHP_SAPI == 'cli') ? PHP_EOL : '<br />');

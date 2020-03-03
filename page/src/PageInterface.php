@@ -4,7 +4,7 @@ namespace projectorangebox\page;
 
 interface PageInterface
 {
-	public function __construct(array $config);
+	public function __construct(array &$config);
 	public function setDefaultView(string $defaultView): PageInterface;
 	public function render(string $view = null, array $data = null): PageInterface;
 	public function view(string $viewFile = null, array $data = null, $return = true);

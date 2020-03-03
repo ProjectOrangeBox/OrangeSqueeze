@@ -18,8 +18,10 @@ class Auth implements AuthInterface
 	protected $password_column;
 	protected $is_active_column;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
+		\log_message('info', __METHOD__);
+
 		/* defaults */
 		$defaults = [
 			'empty fields error' => 'Missing Required Field.',

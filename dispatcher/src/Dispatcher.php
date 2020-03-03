@@ -3,15 +3,19 @@
 namespace projectorangebox\dispatcher;
 
 use Exception;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 use projectorangebox\container\ContainerInterface;
 use projectorangebox\middleware\handler\MiddlewareInterface;
+use projectorangebox\request\RequestInterface;
+use projectorangebox\response\ResponseInterface;
+use projectorangebox\router\RouterInterface;
 
 class Dispatcher implements DispatcherInterface
 {
 	protected $container;
-	protected $request;
-	protected $response;
-	protected $router;
+	protected $requestService;
+	protected $responseService;
+	protected $routerService;
 	protected $hasMiddlewareHandlerService;
 	protected $middlewareHandlerService;
 
@@ -19,36 +23,62 @@ class Dispatcher implements DispatcherInterface
 	protected $captured = [];
 	protected $segments = [];
 
-	public function __construct(ContainerInterface $container)
+	public function __construct(array &$config)
 	{
 		/* This is injected into the controller constructor */
-		$this->container = $container;
+		$this->container = &$config['container'];
 
-		$this->router = $container->router;
-		$this->request = $container->request;
-		$this->response = $container->response;
+		if (!($this->container instanceof ContainerInterface)) {
+			throw new IncorrectInterfaceException('ContainerInterface');
+		}
+
+		$this->routerService = &$config['routerService'];
+
+		if (!($this->routerService instanceof RouterInterface)) {
+			throw new IncorrectInterfaceException('RouterInterface');
+		}
+
+		$this->requestService = &$config['requestService'];
+
+		if (!($this->requestService instanceof RequestInterface)) {
+			throw new IncorrectInterfaceException('RequestInterface');
+		}
+
+		$this->responseService = &$config['responseService'];
+
+		if (!($this->responseService instanceof ResponseInterface)) {
+			throw new IncorrectInterfaceException('ResponseInterface');
+		}
 
 		/* test once */
-		if ($this->hasMiddlewareHandlerService = $container->has('middleware')) {
-			if ($container->middleware instanceof MiddlewareInterface) {
-				$this->middlewareHandlerService = $container->middleware;
+		if ($this->hasMiddlewareHandlerService = $this->container->has('middleware')) {
+			if ($this->container->middleware instanceof MiddlewareInterface) {
+				$this->middlewareHandlerService = $this->container->middleware;
 			} else {
 				/* throw fatal low level error */
-				throw new Exception('Middleware attached to the container is not a instance of handler\MiddlewareInterface.');
+				throw new IncorrectInterfaceException('MiddlewareInterface');
 			}
 		}
 	}
 
 	public function dispatch(): void
 	{
-		\log_message('info', __CLASS__);
+		\log_message('info', __METHOD__);
 
-		$httpMethod = $this->request->requestMethod();
-		$uri = $this->request->uri();
-		$matched = $this->router->handle($uri, $httpMethod);
+		/*  Turn on output buffering */
+		ob_start();
 
-		$this->captured = $this->router->captured();
+		$httpMethod = $this->requestService->requestMethod();
+		$uri = $this->requestService->uri();
+		$matched = $this->routerService->handle($uri, $httpMethod);
+
+		$this->captured = $this->routerService->captured();
 		$this->segments = explode('/', $uri);
+
+		/* if response has a displayCache function call it with the Uri */
+		if (\method_exists($this->responseService, 'displayCache')) {
+			$this->responseService->displayCache($uri);
+		}
 
 		/* middleware input */
 		if ($this->hasMiddlewareHandlerService) {
@@ -87,19 +117,12 @@ class Dispatcher implements DispatcherInterface
 		$parameters = $this->replace($parameters);
 
 		/* call the controller method */
+		$returned = \call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')));
 
-		$output = '';
-
-		ob_start();
-
-		$output .= \call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')));
-
-		$output .= ob_get_clean();
-
-		ob_end_clean();
-
-		if ($output) {
-			$this->response->append((string) $output);
+		if (\is_string($returned) && !empty($returned)) {
+			$this->responseService->append($returned);
+		} else {
+			$this->responseService->append(ob_get_clean());
 		}
 
 		/* middleware output */
@@ -108,7 +131,7 @@ class Dispatcher implements DispatcherInterface
 			$this->middlewareHandlerService->response();
 		}
 
-		$this->response->display();
+		$this->responseService->display();
 	}
 
 	protected function replace(string $string): string

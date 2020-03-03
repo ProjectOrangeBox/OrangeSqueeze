@@ -4,7 +4,7 @@ namespace projectorangebox\container;
 
 interface ContainerInterface
 {
-	public function __construct(array &$configArray = null);
+	public function __construct(array &$services = null);
 
 	public function __get(string $serviceName);
 	public function get(string $serviceName);

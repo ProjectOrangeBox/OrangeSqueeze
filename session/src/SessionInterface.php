@@ -4,7 +4,7 @@ namespace projectorangebox\session;
 
 interface SessionInterface
 {
-	public function __construct(array $config);
+	public function __construct(array &$config);
 	public function __set($name, $value);
 	public function __get(string $name);
 	public function __unset($key);

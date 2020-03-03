@@ -4,7 +4,7 @@ namespace projectorangebox\cache;
 
 interface CacheInterface
 {
-	public function __construct(array $config);
+	public function __construct(array &$config);
 	public function get(string $key); /* mixed */
 	public function getMetadata(string $key): array;
 	public function save(string $key, $value, int $ttl = null): bool;

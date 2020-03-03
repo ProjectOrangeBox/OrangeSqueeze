@@ -9,6 +9,8 @@ class Router implements RouterInterface
 
 	public function __construct(array $routes)
 	{
+		\log_message('info', __METHOD__);
+
 		$this->routes = $routes;
 	}
 

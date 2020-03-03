@@ -4,7 +4,7 @@ namespace projectorangebox\auth;
 
 interface AuthInterface
 {
-	public function __construct(array $config);
+	public function __construct(array &$config);
 	public function userId(): int;
 
 	public function error(): string;

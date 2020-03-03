@@ -10,7 +10,7 @@ class ResponseStream extends Response implements ResponseInterface
 	protected $injectorSent = false;
 	protected $isCli = false;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
 		$this->isCli = $config['is cli'] ?? false;
 
@@ -39,20 +39,20 @@ class ResponseStream extends Response implements ResponseInterface
 			}
 		}
 
+		/* Flush (send) the output buffer and turn off output buffering */
 		ob_end_flush();
 
-		/* Output String */
+		/* Output a Injectable Block or Direct Output? */
 		if ($output && $name) {
-
 			echo '<script>' . $this->functionName . '("' . $name . '",' . json_encode($output) . ');</script>';
-
-			\file_put_contents(__ROOT__ . '/debug.log', '<script>' . $this->functionName . '("' . $name . '",' . json_encode($output) . ');</script>', FILE_APPEND | LOCK_EX);
 		} else {
 			echo $name;
 		}
 
-		/* Send the output buffer & Flush system output buffer */
+		/* Flush (send) the output buffer */
 		ob_flush();
+
+		/* Flush system output buffer */
 		flush();
 
 		return $this;

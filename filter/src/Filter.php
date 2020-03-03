@@ -11,8 +11,10 @@ class Filter implements FilterInterface
 	protected $config = [];
 	protected $rulesClasses = [];
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
+		\log_message('info', __METHOD__);
+
 		$this->config = $config;
 		$this->rulesClasses = $config['rules'];
 	}

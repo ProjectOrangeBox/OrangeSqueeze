@@ -13,7 +13,7 @@ class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInter
 {
 	protected $config = [];
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
 		$this->config = $config;
 

@@ -9,9 +9,13 @@ class Response implements ResponseInterface
 	protected $headerSend = false;
 	protected $http_response_code = [];
 	protected $header = [];
+	protected $config = [];
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
+		\log_message('info', __METHOD__);
+
+		$this->config = $config;
 	}
 
 	/* get the current response output buffer */
@@ -37,7 +41,7 @@ class Response implements ResponseInterface
 	}
 
 	/* echo final output */
-	public function display(string $output = null, int $status_code = 0): void
+	public function display(string $output = null, int $statusCode = 0): void
 	{
 		if (!$this->headerSend) {
 			$this->sendHeader();
@@ -47,9 +51,10 @@ class Response implements ResponseInterface
 			$this->finalOutput .= $output;
 		}
 
+		/* final echo */
 		echo $this->finalOutput;
 
-		$this->exit($status_code);
+		$this->exit($statusCode);
 	}
 
 	/* Set the HTTP response code */

@@ -41,7 +41,7 @@ class collector implements collectorInterface
 
 	protected $persistenceSupported = false;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
 		if (isset($config['sessionService'])) {
 			$this->sessionService = $config['sessionService'];

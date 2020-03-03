@@ -2,7 +2,10 @@
 
 namespace projectorangebox\log;
 
-class logger implements LoggerInterface
+use FS;
+use Exception;
+
+class Logger implements LoggerInterface
 {
 	protected $logFile = '';
 	protected $enabled = false;
@@ -76,10 +79,10 @@ class logger implements LoggerInterface
 		$logPath = '/' . trim($logPath, '/');
 
 		/* can we write to this folder? */
-		if (!\FS::is_dir($logPath) || !\FS::is_writable($logPath)) {
+		if (!FS::is_dir($logPath) || !FS::is_writable($logPath)) {
 			$this->enabled = false;
 
-			throw new \Exception('Can not write to log folder.');
+			throw new Exception('Can not write to log folder.');
 		}
 
 		$this->lineDateFormat = $config['line date format'] ?? 'r';
@@ -106,9 +109,9 @@ class logger implements LoggerInterface
 
 		if ($this->enabled) {
 			if ($this->testLevel($level)) {
-				$bytes = \FS::file_put_contents($this->logFile, $this->format($level, $message, $context), FILE_APPEND | LOCK_EX);
+				$bytes = FS::file_put_contents($this->logFile, $this->format($level, $message, $context), FILE_APPEND | LOCK_EX);
 
-				\FS::chmod($this->logFile, octdec($this->filePermissions));
+				FS::chmod($this->logFile, octdec($this->filePermissions));
 			}
 		}
 

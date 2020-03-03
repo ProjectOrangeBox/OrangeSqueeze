@@ -4,7 +4,7 @@ namespace projectorangebox\user;
 
 interface UserInterface
 {
-	public function __construct(array $config);
+	public function __construct(array &$config);
 	public function __get(string $name); /* mixed */
 	public function setUserId(int $userId): bool;
 	public function setUserGuest(): bool;

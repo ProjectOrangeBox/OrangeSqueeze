@@ -15,6 +15,8 @@ abstract class Middleware
 
 	public function __get(string $name) /* mixed */
 	{
+		\log_message('info', __METHOD__ . ' get ' . $name);
+
 		return $this->container->$name;
 	}
 }

@@ -17,10 +17,10 @@ class Container implements ContainerInterface
 	 * @param mixed array (optional)
 	 * @return di
 	 */
-	public function __construct(array &$serviceArray = null)
+	public function __construct(array &$services = null)
 	{
-		if (is_array($serviceArray)) {
-			foreach ($serviceArray as $serviceName => $closureSingleton) {
+		if (is_array($services)) {
+			foreach ($services as $serviceName => $closureSingleton) {
 				$this->register($serviceName, $closureSingleton[0], ($closureSingleton[1] ?? true));
 			}
 		}

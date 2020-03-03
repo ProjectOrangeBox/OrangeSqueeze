@@ -23,7 +23,7 @@ class Pear implements PearInterface
 	{
 		$name = 'pear_' . strtolower($name);
 
-		log_message('debug', 'Pear::__callStatic::' . $name);
+		log_message('info', 'Pear::__callStatic::' . $name);
 
 		if (!isset(self::$plugins[$name])) {
 			throw new PluginNotFoundException($name);

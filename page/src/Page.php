@@ -7,7 +7,6 @@ use Pear;
 use projectorangebox\page\traits\DataTrait;
 use projectorangebox\page\traits\ElementsTrait;
 use projectorangebox\response\ResponseInterface;
-use projectorangebox\page\traits\FormattersTrait;
 use projectorangebox\common\exceptions\mvc\ParserException;
 use projectorangebox\common\exceptions\mvc\ViewNotFoundException;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
@@ -35,8 +34,10 @@ class Page implements PageInterface
 	protected $script_attributes;
 	protected $variablesPrefix = 'add::';
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
+		\log_message('info', __METHOD__);
+
 		$this->responseService = $config['responseService'];
 
 		if (!($this->responseService instanceof ResponseInterface)) {
@@ -94,7 +95,7 @@ class Page implements PageInterface
 
 	public function render(string $view = null, array $data = null): PageInterface
 	{
-		\log_message('debug', 'page::render::' . $view);
+		\log_message('info', 'page::render::' . $view);
 
 		$view = ($view) ?? $this->defaultView;
 

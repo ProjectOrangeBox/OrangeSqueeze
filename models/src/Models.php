@@ -10,7 +10,7 @@ class Models implements ModelsInterface
 	protected $models = [];
 	protected $config;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
 		$this->config = &$config;
 	}

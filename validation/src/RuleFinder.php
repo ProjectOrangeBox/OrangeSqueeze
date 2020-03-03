@@ -2,24 +2,26 @@
 
 namespace projectorangebox\validation;
 
+use FS;
+
 class RuleFinder
 {
-	static protected $found = [];
-
 	static public function search(array $regexPaths)
 	{
+		$found = [];
+
 		foreach ($regexPaths as $regex) {
-			foreach (\FS::regexGlob($regex) as $match) {
-				self::$found[\strtolower($match['key'])] = self::extractNameSpace($match[0]);
+			foreach (FS::regexGlob($regex) as $match) {
+				$found[\strtolower($match['key'])] = self::extractNameSpace($match[0]);
 			}
 		}
 
-		return self::$found;
+		return $found;
 	}
 
 	static public function extractNameSpace(string $filepath): string
 	{
-		$contents = \FS::file_get_contents($filepath);
+		$contents = FS::file_get_contents($filepath);
 
 		// namespace projectorangebox\validation\rules;
 		// class alpha_dash extends

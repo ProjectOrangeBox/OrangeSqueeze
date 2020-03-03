@@ -9,19 +9,16 @@ class Php implements ParserInterface
 {
 	protected $config = [];
 	protected $views = [];
+	protected $cacheFolder = '';
+	protected $forceCompile = true;
 
-	public function __construct(array $config, array $views)
+	public function __construct(array &$config)
 	{
-		$this->views = $views;
+		$this->views = $config['views'] ?? [];
+		$this->cacheFolder = $config['cache folder'] ?? '/var/cache/markdown';
+		$this->forceCompile = $config['forceCompile'] ?? DEBUG;
 
-		$requiredDefaults = [
-			'cache folder' => '/cache/phpview', /* assocated array name => complete path */
-			'forceCompile' => DEBUG, /* boolean - always compile in developer mode */
-		];
-
-		$this->config = array_replace($requiredDefaults, $config);
-
-		\FS::mkdir($this->config['cache folder']);
+		FS::mkdir($this->cacheFolder);
 	}
 
 	public function add(string $name, string $value): ParserInterface
@@ -43,7 +40,7 @@ class Php implements ParserInterface
 
 	public function parse_string(string $string, array $data = []): string
 	{
-		$path = $this->config['cache folder'] . '/' . md5($string);
+		$path = $this->cacheFolder . '/' . md5($string);
 
 		FS::file_put_contents($path, $string, FILE_APPEND | LOCK_EX);
 

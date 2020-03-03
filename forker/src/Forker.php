@@ -19,10 +19,8 @@ class Forker
 
 	public $response;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
-		require __DIR__ . '/Forker_response.php';
-
 		$this->phpbin = $config['php bin'] ?? '/usr/bin/php';
 		$this->bootstrapFile = $config['bootstrap file'] ?? '/index.php';
 		$this->maximumWait = $config['maximum wait'] ?? 20;

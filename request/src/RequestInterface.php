@@ -4,7 +4,7 @@ namespace projectorangebox\request;
 
 interface RequestInterface
 {
-	public function __construct(array $config);
+	public function __construct(array &$config);
 	public function isCli(): bool;
 	public function isAjax(): bool;
 	public function baseUrl(): string;

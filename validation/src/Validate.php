@@ -21,8 +21,10 @@ class Validate implements ValidateInterface
 	protected $filterService;
 	protected $filterRegex = ''; // prefix match ie. ';^filter_(.*)$;';
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
+		\log_message('info', __METHOD__);
+
 		$this->config = $config;
 		$this->rulesClasses = $config['rules'];
 
@@ -95,11 +97,11 @@ class Validate implements ValidateInterface
 
 			/* yes - for each rule...*/
 			foreach ($rules as $rule) {
-				\log_message('debug', 'Validate Rule ' . $rule . ' "' . $field . '" ' . $human);
+				\log_message('info', 'Validate Rule ' . $rule . ' "' . $field . '" ' . $human);
 
 				/* no rule? exit processing of the $rules array */
 				if (empty($rule)) {
-					\log_message('debug', 'Validate no validation rule.');
+					\log_message('info', 'Validate no validation rule.');
 
 					$success = true;
 					break;
@@ -107,7 +109,7 @@ class Validate implements ValidateInterface
 
 				/* do we have this special rule? */
 				if ($rule == 'allow_empty') {
-					\log_message('debug', 'Validate allow_empy skipping the rest if empty.');
+					\log_message('info', 'Validate allow_empy skipping the rest if empty.');
 
 					if (empty($field)) {
 						/* end processing of the $rules array */
@@ -138,7 +140,7 @@ class Validate implements ValidateInterface
 					$success = $this->_validation($field, $rule, $parameters);
 				}
 
-				\log_message('debug', 'Validate Success ' . $success);
+				\log_message('info', 'Validate Success ' . $success);
 
 				/* bail on first failure */
 				if ($success === false) {
@@ -235,7 +237,7 @@ class Validate implements ValidateInterface
 		/* do we have a human readable field name? if not then try to make one */
 		$this->error_human = ($human) ? $human : strtolower(str_replace('_', ' ', $rule));
 
-		\log_message('debug', 'Validate ' . $rule . '[' . $parameters . '] > ' . $this->error_human);
+		\log_message('info', 'Validate ' . $rule . '[' . $parameters . '] > ' . $this->error_human);
 
 		/* try to format the parameters into something human readable incase they need this in there error message  */
 		if (strpos($parameters, ',') !== false) {

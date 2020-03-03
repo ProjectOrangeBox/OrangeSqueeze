@@ -11,7 +11,7 @@ class DatabaseModel extends DataModel
 	protected $primaryKey = 'id';
 	protected $connection = 'default database';
 
-	public function __construct($db, array $config)
+	public function __construct($db, array &$config)
 	{
 		parent::__construct($config);
 

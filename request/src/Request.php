@@ -14,8 +14,10 @@ class Request implements RequestInterface
 	protected $segments = [];
 	protected $isCli = false;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
+		\log_message('info', __METHOD__);
+
 		$this->config = $config;
 
 		$this->isCli = (php_sapi_name() == 'cli');

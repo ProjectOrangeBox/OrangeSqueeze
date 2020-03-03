@@ -2,18 +2,20 @@
 
 namespace projectorangebox\view;
 
+use FS;
+
 class ViewFinder
 {
-	static protected $found = [];
-
-	static public function search($regexPaths)
+	static public function search(array $regexPaths)
 	{
+		$found = [];
+
 		foreach ($regexPaths as $regex) {
-			foreach (\FS::regexGlob($regex) as $match) {
-				self::$found[$match['key']] = $match[0];
+			foreach (FS::regexGlob($regex) as $match) {
+				$found[$match['key']] = $match[0];
 			}
 		}
 
-		return self::$found;
+		return $found;
 	}
 }

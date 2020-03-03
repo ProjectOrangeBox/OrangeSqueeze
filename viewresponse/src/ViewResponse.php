@@ -44,8 +44,10 @@ class ViewResponse implements ViewResponseInterface
 	 * @param array $config
 	 * @return void
 	 */
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
+		\log_message('info', __METHOD__);
+
 		$this->typeMap = $config['type map'] ?? $this->typeMap;
 
 		$this->type(($config['type'] ?? 'html'), ($config['charset'] ?? $this->charset));

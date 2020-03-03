@@ -16,7 +16,7 @@ class MedooDatabaseModel extends DatabaseModel implements DatabaseModelInterface
 	protected $limit = 0;
 	protected $pdoStatement;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
 		$connection = $this->connection ?? 'default';
 

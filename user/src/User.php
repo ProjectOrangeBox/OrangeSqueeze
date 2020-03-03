@@ -47,8 +47,10 @@ class User implements UserInterface
 	protected $rolePermissionTable;
 	protected $permissionTable;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
+		\log_message('info', __METHOD__);
+
 		/* check for required */
 		$required = [
 			'admin user',

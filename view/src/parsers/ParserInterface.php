@@ -4,7 +4,7 @@ namespace projectorangebox\view\parsers;
 
 interface ParserInterface
 {
-	public function __construct(array $config, array $views);
+	public function __construct(array &$config);
 	public function exists(string $name): bool;
 	public function add(string $name, string $value): ParserInterface;
 	public function parse(string $view, array $data = []): string;

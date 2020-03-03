@@ -2,19 +2,21 @@
 
 namespace projectorangebox\filter;
 
+use FS;
+
 class FilterFinder
 {
-	static protected $found = [];
-
 	static public function search(array $regexPaths)
 	{
+		$found = [];
+
 		foreach ($regexPaths as $regex) {
-			foreach (\FS::regexGlob($regex) as $match) {
-				self::$found[\strtolower($match['key'])] = self::extractNameSpace($match[0]);
+			foreach (FS::regexGlob($regex) as $match) {
+				$found[\strtolower($match['key'])] = self::extractNameSpace($match[0]);
 			}
 		}
 
-		return self::$found;
+		return $found;
 	}
 
 	static public function extractNameSpace(string $filepath): string

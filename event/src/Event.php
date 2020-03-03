@@ -37,7 +37,7 @@ class Event implements EventInterface
 		$name = $this->normalizeName($name);
 
 		/* log a debug event */
-		\log_message('debug', 'event::register::' . $name);
+		\log_message('info', 'event::register::' . $name);
 
 		$this->listeners[$name][0] = !isset($this->listeners[$name]); // Sorted?
 		$this->listeners[$name][1][] = $priority;
@@ -68,7 +68,7 @@ class Event implements EventInterface
 		$name = $this->normalizeName($name);
 
 		/* log a debug event */
-		\log_message('debug', 'event::trigger::' . $name);
+		\log_message('info', 'event::trigger::' . $name);
 
 		/* do we even have any events with this name? */
 		if (isset($this->listeners[$name])) {

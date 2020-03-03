@@ -1,15 +1,16 @@
 <?php
 
-namespace projectorangebox\cache;
+namespace projectorangebox\cache\handlers;
 
 use FS;
+use projectorangebox\cache\CacheInterface;
 
 class CacheFile implements CacheInterface
 {
 	protected $cachePath = '';
 	protected $ttl;
 
-	public function __construct(array $config)
+	public function __construct(array &$config)
 	{
 		/* make cache path ready to use */
 		$this->cachePath = rtrim($config['path'], '/') . '/';
@@ -24,17 +25,13 @@ class CacheFile implements CacheInterface
 
 		$get = false;
 
-		if ($this->ttl > 0) {
-			if (FS::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && FS::file_exists($this->cachePath . $key)) {
-				$meta = $this->getMetadata($key);
+		if (FS::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && FS::file_exists($this->cachePath . $key)) {
+			$meta = $this->getMetadata($key);
 
-				if ($this->isExpired($meta['expire'])) {
-					$this->delete($key);
-				} else {
-					$get = include FS::resolve($this->cachePath . $key);
-				}
+			if ($this->isExpired($meta['expire'])) {
+				$this->delete($key);
 			} else {
-				\log_message('info', 'Cache ttl less that 1 therefore caching loading skipped.');
+				$get = include FS::resolve($this->cachePath . $key);
 			}
 		}
 
