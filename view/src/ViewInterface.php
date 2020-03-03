@@ -16,5 +16,5 @@ interface ViewInterface
 
 	public function parse(string $view, array $data = []): string;
 
-	public function parse_string(string $string, array $data = []): string;
+	public function parse_string(string $string, array $data = [], string $ext = null): string;
 }

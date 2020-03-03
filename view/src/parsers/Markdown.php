@@ -4,6 +4,7 @@ namespace projectorangebox\view\parsers;
 
 use FS;
 use Michelf\Markdown as MichelfMarkdown;
+use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
 use projectorangebox\view\parsers\ParserInterface;
 
 class Markdown implements ParserInterface
@@ -49,25 +50,23 @@ class Markdown implements ParserInterface
 		return isset($this->views[$name]);
 	}
 
-	public function parse(string $templateFile, array $data = [], bool $return = false): string
+	public function parse(string $view, array $data = []): string
 	{
-		return $this->_parse(FS::file_get_contents($this->views[strtolower(trim($templateFile, '/'))], true), $data, $return);
-	}
-
-	public function parse_string(string $templateStr, array $data = [], bool $return = false): string
-	{
-		return $this->_parse($templateStr, $data, $return);
-	}
-
-	protected function _parse(string $template, array $data, bool $return): string
-	{
-		$template = $this->merge(FS::file_get_contents($this->compileFile($template)), $data);
-
-		if (!$return) {
-			echo $template;
+		if (!$this->exists($view)) {
+			throw new TemplateNotFoundException($view);
 		}
 
-		return $template;
+		return $this->_parse(FS::file_get_contents($this->views[strtolower(trim($view, '/'))], true), $data);
+	}
+
+	public function parse_string(string $string, array $data = []): string
+	{
+		return $this->_parse($string, $data);
+	}
+
+	protected function _parse(string $template, array $data): string
+	{
+		return $this->merge(FS::file_get_contents($this->compileFile($template)), $data);
 	}
 
 	protected function merge(string $string, array $parameters): string

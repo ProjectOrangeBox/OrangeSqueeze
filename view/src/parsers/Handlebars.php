@@ -50,6 +50,13 @@ class Handlebars implements ParserInterface
 
 	protected $plugins; /* actual plugins after loaded */
 
+	protected $cacheFolder = '';
+	protected $templates = [];
+	protected $partials = [];
+	protected $forceCompile = true;
+	protected $HBCachePrefix = 'hbs.';
+	protected $delimiters = ['{{', '}}'];
+
 	/**
 	 * Constructor - Sets Handlebars Preferences
 	 *
@@ -59,21 +66,20 @@ class Handlebars implements ParserInterface
 	 */
 	public function __construct(array &$config)
 	{
-		$requiredDefaults = [
-			'plugins' => [], /* array of complete paths to every plugin */
-			'templates' => [], /* assocated array name => complete path */
-			'partials' => [],  /* assocated array name => complete path */
-			'forceCompile' => DEBUG, /* boolean - always compile in developer mode */
-			'cache folder' => '/var/cache/handlebars', /* string - folder inside cache folder if any */
-			'HBCachePrefix' => 'hbs.', /* string - prefix all HBCache cached entries with */
-			'delimiters' => ['{{', '}}'], /* array */
-			/* lightncandy handlebars compiler flags https://github.com/zordius/lightncandy#compile-options */
-			'flags' => LightnCandy::FLAG_ERROR_EXCEPTION | LightnCandy::FLAG_HANDLEBARS | LightnCandy::FLAG_HANDLEBARSJS | LightnCandy::FLAG_RUNTIMEPARTIAL, /* integer */
-		];
+		$this->config = &$config;
 
-		$this->config = array_replace($requiredDefaults, $config);
+		$this->cacheFolder = $config['cache folder'] ?? '/var/cache/handlebars';
+		$this->plugins = $config['plugins'] ?? [];
+		$this->templates = $config['templates'] ?? [];
+		$this->partials = $config['partials'] ?? [];
+		$this->forceCompile = $config['forceCompile'] ?? DEBUG;
+		$this->HBCachePrefix = $config['HBCachePrefix'] ?? 'hbs.';
+		$this->delimiters = $config['delimiters'] ?? ['{{', '}}'];
 
-		FS::mkdir($this->config['cache folder']);
+		/* lightncandy handlebars compiler flags https://github.com/zordius/lightncandy#compile-options */
+		$this->flags = $config['flags'] ?? LightnCandy::FLAG_ERROR_EXCEPTION | LightnCandy::FLAG_HANDLEBARS | LightnCandy::FLAG_HANDLEBARSJS | LightnCandy::FLAG_RUNTIMEPARTIAL; /* integer */
+
+		FS::mkdir($this->cacheFolder);
 	}
 
 	public function exists(string $name): bool
@@ -82,7 +88,7 @@ class Handlebars implements ParserInterface
 
 		\log_message('info', 'Find ' . $name);
 
-		return isset($this->config['templates'][$name]);
+		return isset($this->templates[$name]);
 	}
 
 	/* These are just like CodeIgniter regular parser */
@@ -98,17 +104,11 @@ class Handlebars implements ParserInterface
 	 * @param	bool
 	 * @return	string
 	 */
-	public function parse(string $templateFile, array $data = [], bool $return = false): string
+	public function parse(string $templateFile, array $data = []): string
 	{
 		\log_message('info', 'handlebars parse ' . $templateFile);
 
-		$output = $this->run($this->parseTemplate($templateFile, true), $data, !$return);
-
-		if (!$return) {
-			echo $output;
-		}
-
-		return $output;
+		return $this->run($this->parseTemplate($templateFile, true), $data);
 	}
 
 	/**
@@ -122,17 +122,11 @@ class Handlebars implements ParserInterface
 	 * @param	bool
 	 * @return	string
 	 */
-	public function parse_string(string $templateStr, array $data = [], bool $return = false): string
+	public function parse_string(string $templateStr, array $data = []): string
 	{
 		\log_message('info', 'handlebars parse string ' . substr($templateStr, 0, 128) . '...');
 
-		$output = $this->run($this->parseTemplate($templateStr, false), $data, !$return);
-
-		if (!$return) {
-			echo $output;
-		}
-
-		return $output;
+		return $this->run($this->parseTemplate($templateStr, false), $data);
 	}
 
 	/*
@@ -145,7 +139,7 @@ class Handlebars implements ParserInterface
 	public function set_delimiters(/* string|array */$l = '{{', string $r = '}}'): ParserInterface
 	{
 		/* set delimiters */
-		$this->config['delimiters'] = (is_array($l)) ? $l : [$l, $r];
+		$this->delimiters = (is_array($l)) ? $l : [$l, $r];
 
 		/* chain-able */
 		return $this;
@@ -179,10 +173,10 @@ class Handlebars implements ParserInterface
 
 		/* Compile it into php magic! Thank you zordius https://github.com/zordius/lightncandy */
 		return LightnCandy::compile($templateSource, [
-			'flags' => $this->config['flags'], /* compiler flags */
+			'flags' => $this->flags, /* compiler flags */
 			'helpers' => $this->plugins, /* Add the plugins (handlebars.js calls helpers) */
 			'renderex' => '/* ' . $comment . ' compiled @ ' . date('Y-m-d h:i:s e') . ' */', /* Added to compiled PHP */
-			'delimiters' => $this->config['delimiters'],
+			'delimiters' => $this->delimiters,
 			'partialresolver' => function ($context, $name) { /* partial & template handling */
 				/* Try if it's a partial, template or insert as html comment */
 				try {
@@ -207,7 +201,7 @@ class Handlebars implements ParserInterface
 
 		\log_message('info', 'handlebars add template ' . $name);
 
-		$this->config['templates'][$name] = '/' . trim($path, '/');
+		$this->templates[$name] = '/' . trim($path, '/');
 
 		return $this;
 	}
@@ -218,11 +212,11 @@ class Handlebars implements ParserInterface
 
 		\log_message('info', 'handlebars find template ' . $name);
 
-		if (!isset($this->config['templates'][$name])) {
+		if (!isset($this->templates[$name])) {
 			throw new TemplateNotFoundException($name);
 		}
 
-		return $this->config['templates'][$name];
+		return $this->templates[$name];
 	}
 
 	/* a partial is a string */
@@ -232,7 +226,7 @@ class Handlebars implements ParserInterface
 
 		\log_message('info', 'handlebars add partial ' . $name);
 
-		$this->config['partials'][$name] = $string;
+		$this->partials[$name] = $string;
 
 		return $this;
 	}
@@ -243,11 +237,11 @@ class Handlebars implements ParserInterface
 
 		\log_message('info', 'handlebars find partial ' . $name);
 
-		if (!isset($this->config['partials'][$name])) {
+		if (!isset($this->partials[$name])) {
 			throw new PartialNotFoundException($name);
 		}
 
-		return $this->config['partials'][$name];
+		return $this->partials[$name];
 	}
 
 	/*
@@ -273,10 +267,10 @@ class Handlebars implements ParserInterface
 	public function parseTemplate(string $template, bool $isFile): string
 	{
 		/* build the compiled file path */
-		$compiledFile = $this->config['cache folder'] . '/' . $this->config['HBCachePrefix'] . md5($template) . '.php';
+		$compiledFile = $this->cacheFolder . '/' . $this->HBCachePrefix . md5($template) . '.php';
 
 		/* always compile in development or not save or compile if doesn't exist */
-		if ($this->config['forceCompile'] || !FS::file_exists($compiledFile)) {
+		if ($this->forceCompile || !FS::file_exists($compiledFile)) {
 			/* compile the template as either file or string */
 			if ($isFile) {
 				$source = FS::file_get_contents($this->findTemplate($template));
@@ -342,14 +336,14 @@ class Handlebars implements ParserInterface
 	{
 		\log_message('info', 'handlebars load helpers');
 
-		$cacheFile = $this->config['cache folder'] . '/' . $this->config['HBCachePrefix'] . 'helpers.php';
+		$cacheFile = $this->cacheFolder . '/' . $this->HBCachePrefix . 'helpers.php';
 
-		if ($this->config['forceCompile'] || !FS::file_exists($cacheFile)) {
+		if ($this->forceCompile || !FS::file_exists($cacheFile)) {
 			$combined  = '<?php' . PHP_EOL . '/*' . PHP_EOL . 'DO NOT MODIFY THIS FILE' . PHP_EOL . 'Written: ' . date('Y-m-d H:i:s T') . PHP_EOL . '*/' . PHP_EOL . PHP_EOL;
 
 			/* find all of the plugin "services" */
-			if (\is_array($this->config['plugins'])) {
-				foreach ($this->config['plugins'] as $path) {
+			if (\is_array($this->plugins)) {
+				foreach ($this->plugins as $path) {
 					$pluginSource  = php_strip_whitespace(FS::resolve($path));
 					$pluginSource  = trim(str_replace(['<?php', '<?', '?>'], '', $pluginSource));
 					$pluginSource  = trim('/* ' . $path . ' */' . PHP_EOL . $pluginSource) . PHP_EOL . PHP_EOL;
