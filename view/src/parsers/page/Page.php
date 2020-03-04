@@ -16,7 +16,8 @@ class Page extends ParserAbstract implements ParserInterface
 	const PRIORITY_NORMAL = 50;
 	const PRIORITY_HIGH = 80;
 	const PRIORITY_HIGHEST = 90;
-	const SINGLE = -99999999;
+	const REPLACE = -99999999;
+	const NODUPS = -99999998;
 
 	protected $defaultView = '';
 	protected $views = [];
@@ -24,8 +25,6 @@ class Page extends ParserAbstract implements ParserInterface
 	protected $script_attributes;
 	protected $cacheFolder = '';
 	protected $extending = '';
-	protected $blockPrefix = 'block::';
-	protected $variablePrefix = 'variable::';
 	protected $bodyClasses = [];
 
 	public function __construct(array &$config)
@@ -147,7 +146,7 @@ class Page extends ParserAbstract implements ParserInterface
 	public function title(string $title = ''): ParserInterface
 	{
 		/* single value */
-		return $this->setVar('title', $title, Page::SINGLE);
+		return $this->setVar('title', $title, Page::REPLACE);
 	}
 
 	public function style(string $style, int $priority = Page::PRIORITY_NORMAL): ParserInterface
@@ -205,7 +204,7 @@ class Page extends ParserAbstract implements ParserInterface
 
 		$this->bodyClasses = \array_replace($this->bodyClasses, \array_combine($classes, $classes));
 
-		$this->setVar('body_class', implode(' ', $this->bodyClasses, Page::SINGLE));
+		$this->setVar('body_class', implode(' ', $this->bodyClasses, Page::REPLACE));
 
 		return $this;
 	}
@@ -251,27 +250,23 @@ class Page extends ParserAbstract implements ParserInterface
 
 	/* page var collection or other */
 
-	public function setVar(string $name, string $value, int $priority = Page::PRIORITY_NORMAL, bool $prevent_duplicates = true): ParserInterface
+	/* options
+	 * 1 - prevent duplicates
+	 * 2 - replace
+	 */
+	public function setVar(string $name, string $value, int $priority = Page::PRIORITY_NORMAL, int $option = Page::NODUPS): ParserInterface
 	{
-		/* convert a single back to a multi */
-		if ($this->viewData[$name][4] === Page::SINGLE && $priority !== Page::SINGLE) {
-			$value = $this->viewData[$name][0];
+		$key = md5($value);
+
+		if ($option == Page::REPLACE) {
+			$this->viewData[$name] = [];
 		}
 
-		/* replace as single value */
-		if ($priority === Page::SINGLE) {
-			$this->viewData[$name][2] = $value;
-			$this->viewData[$name][4] = Page::SINGLE;
-		} else {
-			$name = $this->variablePrefix . $name;
-			$key = md5($value);
-
-			if (!isset($this->viewData[$name][3][$key]) || !$prevent_duplicates) {
-				$this->viewData[$name][0] = !isset($this->viewData[$name]); /* sorted */
-				$this->viewData[$name][1][] = (int) $priority; /* unix priority */
-				$this->viewData[$name][2][] = $value; /* actual html content (string) */
-				$this->viewData[$name][3][$key] = true; /* prevent duplicates */
-			}
+		if (!isset($this->viewData[$name][3][$key]) || $option == Page::NODUPS) {
+			$this->viewData[$name][0] = !isset($this->viewData[$name]); /* sorted */
+			$this->viewData[$name][1][] = (int) $priority; /* unix priority */
+			$this->viewData[$name][2][] = $value; /* actual html content (string) */
+			$this->viewData[$name][3][$key] = true; /* prevent duplicates */
 		}
 
 		return $this;
@@ -279,26 +274,20 @@ class Page extends ParserAbstract implements ParserInterface
 
 	public function getVar(string $name) /* mixed */
 	{
-		/* single value or array */
-		if ($this->viewData[$name][4] === Page::SINGLE) {
-			$response = $this->viewData[$name][2];
-		} else {
-			$name = $this->variablePrefix . $name;
-			$response = '';
+		$response = '';
 
-			if (isset($this->viewData[$name])) {
-				/* has it already been sorted */
-				if (!$this->viewData[$name][0]) {
-					/* no we must sort it */
-					array_multisort($this->viewData[$name][1], SORT_DESC, SORT_NUMERIC, $this->viewData[$name][2]);
+		if (isset($this->viewData[$name])) {
+			/* has it already been sorted */
+			if (!$this->viewData[$name][0]) {
+				/* no we must sort it */
+				array_multisort($this->viewData[$name][1], SORT_DESC, SORT_NUMERIC, $this->viewData[$name][2]);
 
-					/* mark it as sorted */
-					$this->viewData[$name][0] = true;
-				}
+				/* mark it as sorted */
+				$this->viewData[$name][0] = true;
+			}
 
-				foreach ($this->viewData[$name][2] as $append) {
-					$response .= $append;
-				}
+			foreach ($this->viewData[$name][2] as $append) {
+				$response .= $append;
 			}
 		}
 

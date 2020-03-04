@@ -22,6 +22,6 @@ class Pear_end extends PearAbstract
 		$output = ob_get_clean();
 
 		/* replace what ever is in this block */
-		service('view')->page->setVar($name, $output, Page::SINGLE);
+		service('view')->page->setVar($name, $output, Page::REPLACE);
 	}
 } /* end plugin */

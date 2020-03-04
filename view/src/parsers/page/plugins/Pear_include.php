@@ -15,7 +15,7 @@ class Pear_include extends PearAbstract
 			$output = $viewService->page->_parse($viewService->page->findView($view), $data, $name);
 
 			if (is_string($name)) {
-				$viewService->page->setVar($name, $output, Page::SINGLE);
+				$viewService->page->setVar($name, $output, Page::REPLACE);
 			} else {
 				echo $output;
 			}
