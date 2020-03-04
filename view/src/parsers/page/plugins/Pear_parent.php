@@ -1,9 +1,9 @@
 <?php
 
-namespace projectorangebox\page\plugins;
+namespace projectorangebox\view\parsers\page\plugins;
 
 use pear;
-use projectorangebox\page\PearAbstract;
+use projectorangebox\view\parsers\page\pear\PearAbstract;
 
 class Pear_parent extends PearAbstract
 {
@@ -11,6 +11,6 @@ class Pear_parent extends PearAbstract
 	{
 		$name = ($name) ?? end(pear::$fragment);
 
-		echo service('page')->getVar($name);
+		echo service('view')->page->getBlock($name);
 	}
 } /* end plugin */

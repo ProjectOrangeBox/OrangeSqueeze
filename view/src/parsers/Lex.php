@@ -4,6 +4,7 @@ namespace projectorangebox\view\parsers;
 
 use FS;
 use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
+use projectorangebox\view\ParserAbstract;
 
 /**
  * Part of the Lex Template Parser.
@@ -13,7 +14,7 @@ use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
  * @copyright  2011 Dan Horrigan
  */
 
-class Lex implements ParserInterface
+class Lex extends ParserAbstract implements ParserInterface
 {
 	protected $allow_php = false;
 	protected $regex_setup = false;
@@ -46,27 +47,11 @@ class Lex implements ParserInterface
 	protected static $data = null;
 	protected static $callback_data = array();
 
-	protected $config = [];
-
 	public function __construct(array &$config)
 	{
-		$this->config = &$config;
-
-		$this->views = $config['views'] ?? [];
+		parent::__construct($config);
 
 		Lex::$callback_data = $config['plugins'];
-	}
-
-	public function exists(string $name): bool
-	{
-		return \array_key_exists($name, $this->views);
-	}
-
-	public function add(string $name, string $value): ParserInterface
-	{
-		$this->views[$name] = $value;
-
-		return $this;
 	}
 
 	public function parse(string $view, array $data = []): string

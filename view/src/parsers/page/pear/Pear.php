@@ -2,28 +2,32 @@
 
 #namespace \
 
-use projectorangebox\page\PearAbstract;
-use projectorangebox\page\PearInterface;
+use projectorangebox\view\ViewInterface;
+use projectorangebox\view\parsers\ParserInterface;
+use projectorangebox\view\parsers\page\pear\PearAbstract;
+use projectorangebox\view\parsers\page\pear\PearInterface;
 use projectorangebox\common\exceptions\php\ClassNotFoundException;
 use projectorangebox\common\exceptions\mvc\PluginNotFoundException;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class Pear implements PearInterface
 {
+	protected static $pageClass;
 	protected static $plugins = [];
 
 	public static $fragment = [];
 
-	public static function _construct(array $plugins): void
+	public static function _construct(array $plugins, ParserInterface $pageClass): void
 	{
 		self::$plugins = $plugins;
+		self::$pageClass = $pageClass;
 	}
 
 	public static function __callStatic(string $name, array $arguments = [])
 	{
 		$name = 'pear_' . strtolower($name);
 
-		log_message('info', 'Pear::__callStatic::' . $name);
+		\log_message('info', 'Pear::__callStatic::' . $name);
 
 		if (!isset(self::$plugins[$name])) {
 			throw new PluginNotFoundException($name);
@@ -35,7 +39,7 @@ class Pear implements PearInterface
 			throw new ClassNotFoundException($namespacedClass);
 		}
 
-		$plugin = new $namespacedClass;
+		$plugin = new $namespacedClass(self::$pageClass);
 
 		if (!($plugin instanceof PearAbstract)) {
 			throw new IncorrectInterfaceException('PearInterface');

@@ -17,4 +17,10 @@ interface ViewInterface
 	public function parse(string $view, array $data = []): string;
 
 	public function parse_string(string $string, array $data = [], string $ext = null): string;
+
+	public function var(string $name, $value): ViewInterface;
+	public function vars(array $array): ViewInterface;
+	public function getVar(string $name); /* mixed */
+	public function getVars(): array;
+	public function clearVars(): ViewInterface;
 }

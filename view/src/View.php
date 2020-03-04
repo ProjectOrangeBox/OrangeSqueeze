@@ -2,18 +2,18 @@
 
 namespace projectorangebox\view;
 
-use FS;
-use Exception;
-use projectorangebox\common\exceptions\mvc\ParserForExtentionNotFoundException;
 use projectorangebox\view\ViewInterface;
 use projectorangebox\view\parsers\ParserInterface;
 use projectorangebox\common\exceptions\mvc\ViewNotFoundException;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
+use projectorangebox\common\exceptions\mvc\ParserForExtentionNotFoundException;
 
 class View implements ViewInterface
 {
 	protected $knownParsers;
 	protected $config = [];
+	protected $parserOrder = [];
+	protected $viewData = [];
 
 	public function __construct(array &$config)
 	{
@@ -28,6 +28,8 @@ class View implements ViewInterface
 				throw new IncorrectInterfaceException('ParserInterface');
 			}
 		}
+
+		$this->parserOrder = $config['parser order'] ?? \array_keys($config['parsers']);
 	}
 
 	public function __get(string $name): ParserInterface
@@ -49,7 +51,7 @@ class View implements ViewInterface
 		$output = null;
 
 		/* search for the view - search order based on the parser config order */
-		foreach (array_keys($this->config['parsers']) as $name) {
+		foreach ($this->parserOrder as $name) {
 			if ($this->knownParsers[$name]->exists($view)) {
 				$output = $this->knownParsers[$name]->parse($view, $data);
 			}
@@ -64,40 +66,45 @@ class View implements ViewInterface
 
 	public function parse_string(string $string, array $data = [], string $ext = null): string
 	{
-		$ext = $ext ?? array_key_first($this->knownParsers);
+		$ext = $ext ?? array_key_first($this->parserOrder);
 
 		return $this->knownParsers[$ext]->parse_string($string, $data);
 	}
 
-	static public function view(string $__path, array $__data = []): string
+	/******************
+	 * add data
+	 ******************/
+
+	public function var(string $name, $value): ViewInterface
 	{
-		extract($__data, EXTR_PREFIX_INVALID, '_');
+		$this->viewData[$name] = $value;
 
-		ob_start();
-
-		$__returned = include FS::resolve($__path);
-
-		/* if nothing returned than 1 is returned */
-		if ($__returned === 1) {
-			$__returned = null;
-		}
-
-		$__output = ob_get_clean();
-
-		ob_end_clean();
-
-		return ($__returned !== null) ? $__returned : $__output;
+		return $this;
 	}
 
-	static public function merge(string $string, array $parameters, array $delimiters): string
+	public function vars(array $array): ViewInterface
 	{
-		$leftDelimiter = preg_quote($delimiters[0]);
-		$rightDelimiter = preg_quote($delimiters[1]);
+		foreach ($array as $key => $value) {
+			$this->viewData[$key] = $value;
+		}
 
-		$replacer = function ($match) use ($parameters) {
-			return isset($parameters[$match[1]]) ? $parameters[$match[1]] : $match[0];
-		};
+		return $this;
+	}
 
-		return preg_replace_callback('/' . $leftDelimiter . '\s*(.+?)\s*' . $rightDelimiter . '/', $replacer, $string);
+	public function getVar(string $name) /* mixed */
+	{
+		return $this->viewData[$name] ?? null;
+	}
+
+	public function getVars(): array
+	{
+		return $this->viewData;
+	}
+
+	public function clearVars(): ViewInterface
+	{
+		$this->viewData = [];
+
+		return $this;
 	}
 } /* end class */

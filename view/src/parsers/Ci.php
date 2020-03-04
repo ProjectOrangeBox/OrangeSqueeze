@@ -3,74 +3,17 @@
 namespace projectorangebox\view\parsers;
 
 use FS;
+use projectorangebox\view\ParserAbstract;
 use projectorangebox\view\parsers\ParserInterface;
 
-class Ci implements ParserInterface
+class Ci extends ParserAbstract implements ParserInterface
 {
-
-	protected $config = [];
-	protected $views = [];
-	protected $cacheFolder = '';
-	protected $forceCompile = true;
-	protected $delimiters = ['{', '}'];
-
-	public function __construct(array &$config)
+	protected function _parse(string $__path, array $__data = []): string
 	{
-		$this->views = $config['views'] ?? [];
-		$this->cacheFolder = $config['cache folder'] ?? '/var/cache/codeigniter';
-		$this->forceCompile = $config['forceCompile'] ?? DEBUG;
-
-		FS::mkdir($this->cacheFolder);
+		return $this->_ci_parse(FS::file_get_contents($__path), $__data);
 	}
 
-	/* string|array */
-	public function setDelimiters($l = '{{', string $r = '}}'): ParserInterface
-	{
-		/* set delimiters */
-		$this->delimiters = (is_array($l)) ? $l : [$l, $r];
-
-		/* chain-able */
-		return $this;
-	}
-
-	public function add(string $name, string $value): ParserInterface
-	{
-		$this->views[$name] = $value;
-
-		return $this;
-	}
-
-	public function exists(string $view): bool
-	{
-		return \array_key_exists($view, $this->views);
-	}
-
-	public function parse(string $view, array $data = []): string
-	{
-		return ($this->exists($view)) ? $this->_parse($this->views[$view], $data) : '';
-	}
-
-	public function parse_string(string $string, array $data = []): string
-	{
-		$path = $this->cacheFolder . '/' . md5($string);
-
-		FS::file_put_contents($path, $string, FILE_APPEND | LOCK_EX);
-
-		return $this->_parse($path, $data);
-	}
-
-	/**
-	 * Parse a template
-	 *
-	 * Parses pseudo-variables contained in the specified template,
-	 * replacing them with the data in the second param
-	 *
-	 * @param	string
-	 * @param	array
-	 * @param	bool
-	 * @return	string
-	 */
-	protected function _parse($template, $data)
+	protected function _ci_parse($template, $data)
 	{
 		if ($template === '') {
 			return false;

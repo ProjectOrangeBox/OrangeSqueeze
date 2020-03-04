@@ -1,9 +1,9 @@
 <?php
 
-namespace projectorangebox\page\plugins;
+namespace projectorangebox\view\parsers\page\plugins;
 
 use Pear;
-use projectorangebox\page\PearAbstract;
+use projectorangebox\view\parsers\page\pear\PearAbstract;
 
 /**
  * Validation Filter
