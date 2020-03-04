@@ -16,15 +16,17 @@ class Page extends ParserAbstract implements ParserInterface
 	const PRIORITY_NORMAL = 50;
 	const PRIORITY_HIGH = 80;
 	const PRIORITY_HIGHEST = 90;
+	const SINGLE = -99999999;
 
 	protected $defaultView = '';
 	protected $views = [];
-	protected $pageVar = [];
-	protected $blockVar = [];
 	protected $link_attributes;
 	protected $script_attributes;
 	protected $cacheFolder = '';
 	protected $extending = '';
+	protected $blockPrefix = 'block::';
+	protected $variablePrefix = 'variable::';
+	protected $bodyClasses = [];
 
 	public function __construct(array &$config)
 	{
@@ -123,36 +125,37 @@ class Page extends ParserAbstract implements ParserInterface
 	 * add elements
 	 ******************/
 
-	public function meta($attr, string $name = null, string $content = null, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
+	public function meta($attr, string $name = null, string $content = null, int $priority = Page::PRIORITY_NORMAL): ParserInterface
 	{
 		if (is_array($attr)) {
 			extract($attr);
 		}
 
-		return $this->pageVar('meta', '<meta ' . $attr . '="' . $name . '"' . (($content) ? ' content="' . $content . '"' : '') . '>' . PHP_EOL, $priority);
+		return $this->setVar('meta', '<meta ' . $attr . '="' . $name . '"' . (($content) ? ' content="' . $content . '"' : '') . '>' . PHP_EOL, $priority);
 	}
 
-	public function script(string $script, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
+	public function script(string $script, int $priority = Page::PRIORITY_NORMAL): ParserInterface
 	{
-		return $this->pageVar('script', $script . PHP_EOL, $priority);
+		return $this->setVar('script', $script . PHP_EOL, $priority);
 	}
 
-	public function domready(string $script, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
+	public function domready(string $script, int $priority = Page::PRIORITY_NORMAL): ParserInterface
 	{
-		return $this->pageVar('domready', $script . PHP_EOL, $priority);
+		return $this->setVar('domready', $script . PHP_EOL, $priority);
 	}
 
-	public function title(string $title = '', int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
+	public function title(string $title = ''): ParserInterface
 	{
-		return $this->pageVar('title', $title, $priority);
+		/* single value */
+		return $this->setVar('title', $title, Page::SINGLE);
 	}
 
-	public function style(string $style, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
+	public function style(string $style, int $priority = Page::PRIORITY_NORMAL): ParserInterface
 	{
-		return $this->pageVar('style', $style . PHP_EOL, $priority);
+		return $this->setVar('style', $style . PHP_EOL, $priority);
 	}
 
-	public function js($file = '', int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
+	public function js($file = '', int $priority = Page::PRIORITY_NORMAL): ParserInterface
 	{
 		if (is_array($file)) {
 			foreach ($file as $f) {
@@ -161,10 +164,10 @@ class Page extends ParserAbstract implements ParserInterface
 			return $this;
 		}
 
-		return $this->pageVar('js', $this->scriptHtml($file) . PHP_EOL, $priority);
+		return $this->setVar('js', $this->scriptHtml($file) . PHP_EOL, $priority);
 	}
 
-	public function css($file = '', int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
+	public function css($file = '', int $priority = Page::PRIORITY_NORMAL): ParserInterface
 	{
 		if (is_array($file)) {
 			foreach ($file as $f) {
@@ -173,10 +176,10 @@ class Page extends ParserAbstract implements ParserInterface
 			return $this;
 		}
 
-		return $this->pageVar('css', $this->linkHtml($file) . PHP_EOL, $priority);
+		return $this->setVar('css', $this->linkHtml($file) . PHP_EOL, $priority);
 	}
 
-	public function jsVariable(string $key, $value, int $priority = PAGE::PRIORITY_NORMAL, bool $raw = false): ParserInterface
+	public function jsVariable(string $key, $value, int $priority = Page::PRIORITY_NORMAL, bool $raw = false): ParserInterface
 	{
 		if ($raw) {
 			$value = 'var ' . $key . '=' . $value . ';';
@@ -184,7 +187,7 @@ class Page extends ParserAbstract implements ParserInterface
 			$value = ((is_scalar($value)) ? 'var ' . $key . '="' . str_replace('"', '\"', $value) . '";' : 'var ' . $key . '=' . json_encode($value, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) . ';');
 		}
 
-		return $this->pageVar('jsVariables', $value, $priority);
+		return $this->setVar('jsVariables', $value, $priority);
 	}
 
 	public function jsVariables(array $array): ParserInterface
@@ -196,9 +199,15 @@ class Page extends ParserAbstract implements ParserInterface
 		return $this;
 	}
 
-	public function bodyClass($class, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
+	public function bodyClass($class): ParserInterface
 	{
-		return (is_array($class)) ? $this->_bodyClass($class, $priority) : $this->_bodyClass(explode(' ', $class), $priority);
+		$classes = (is_array($class)) ? $class : explode(' ', $class);
+
+		$this->bodyClasses = \array_replace($this->bodyClasses, \array_combine($classes, $classes));
+
+		$this->setVar('body_class', implode(' ', $this->bodyClasses, Page::SINGLE));
+
+		return $this;
 	}
 
 	public function linkHtml(string $file): string
@@ -239,64 +248,60 @@ class Page extends ParserAbstract implements ParserInterface
 		return rtrim($atts, ',');
 	}
 
-	protected function _bodyClass(array $class, int $priority): ParserInterface
-	{
-		foreach ($class as $c) {
-			$this->pageVar('body_class', ' ' . strtolower(trim($c)), $priority);
-		}
-
-		return $this;
-	}
 
 	/* page var collection or other */
 
-	public function pageVar(string $name, string $value, int $priority = PAGE::PRIORITY_NORMAL, bool $prevent_duplicates = true): ParserInterface
+	public function setVar(string $name, string $value, int $priority = Page::PRIORITY_NORMAL, bool $prevent_duplicates = true): ParserInterface
 	{
-		$key = md5($value);
+		/* convert a single back to a multi */
+		if ($this->viewData[$name][4] === Page::SINGLE && $priority !== Page::SINGLE) {
+			$value = $this->viewData[$name][0];
+		}
 
-		if (!isset($this->pageVar[$name][3][$key]) || !$prevent_duplicates) {
-			$this->pageVar[$name][0] = !isset($this->pageVar[$name]); /* sorted */
-			$this->pageVar[$name][1][] = (int) $priority; /* unix priority */
-			$this->pageVar[$name][2][] = $value; /* actual html content (string) */
-			$this->pageVar[$name][3][$key] = true; /* prevent duplicates */
+		/* replace as single value */
+		if ($priority === Page::SINGLE) {
+			$this->viewData[$name][2] = $value;
+			$this->viewData[$name][4] = Page::SINGLE;
+		} else {
+			$name = $this->variablePrefix . $name;
+			$key = md5($value);
+
+			if (!isset($this->viewData[$name][3][$key]) || !$prevent_duplicates) {
+				$this->viewData[$name][0] = !isset($this->viewData[$name]); /* sorted */
+				$this->viewData[$name][1][] = (int) $priority; /* unix priority */
+				$this->viewData[$name][2][] = $value; /* actual html content (string) */
+				$this->viewData[$name][3][$key] = true; /* prevent duplicates */
+			}
 		}
 
 		return $this;
 	}
 
-	public function getPageVar(string $name) /* mixed */
+	public function getVar(string $name) /* mixed */
 	{
-		$response = '';
+		/* single value or array */
+		if ($this->viewData[$name][4] === Page::SINGLE) {
+			$response = $this->viewData[$name][2];
+		} else {
+			$name = $this->variablePrefix . $name;
+			$response = '';
 
-		if (isset($this->pageVar[$name])) {
-			/* has it already been sorted */
-			if (!$this->pageVar[$name][0]) {
-				/* no we must sort it */
-				array_multisort($this->pageVar[$name][1], SORT_DESC, SORT_NUMERIC, $this->pageVar[$name][2]);
+			if (isset($this->viewData[$name])) {
+				/* has it already been sorted */
+				if (!$this->viewData[$name][0]) {
+					/* no we must sort it */
+					array_multisort($this->viewData[$name][1], SORT_DESC, SORT_NUMERIC, $this->viewData[$name][2]);
 
-				/* mark it as sorted */
-				$this->pageVar[$name][0] = true;
-			}
+					/* mark it as sorted */
+					$this->viewData[$name][0] = true;
+				}
 
-			foreach ($this->pageVar[$name][2] as $append) {
-				$response .= $append;
+				foreach ($this->viewData[$name][2] as $append) {
+					$response .= $append;
+				}
 			}
 		}
 
 		return $response;
-	}
-
-	/* page blocks */
-
-	public function setBlock(string $name, $value): ParserInterface
-	{
-		$this->blockVar[$name] = $value;
-
-		return $this;
-	}
-
-	public function getBlock(string $name)
-	{
-		return $this->blockVar[$name] ?? null;
 	}
 } /* end class */

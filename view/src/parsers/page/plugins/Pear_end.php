@@ -4,6 +4,7 @@ namespace projectorangebox\view\parsers\page\plugins;
 
 use Pear;
 use Exception;
+use projectorangebox\view\parsers\page\Page;
 use projectorangebox\view\parsers\page\pear\PearAbstract;
 
 class Pear_end extends PearAbstract
@@ -18,6 +19,9 @@ class Pear_end extends PearAbstract
 		$name = array_pop(Pear::$fragment);
 
 		/* Flush the output buffer, return it as a string and turn off output buffering */
-		service('view')->page->setBlock($name, ob_get_clean());
+		$output = ob_get_clean();
+
+		/* replace what ever is in this block */
+		service('view')->page->setVar($name, $output, Page::SINGLE);
 	}
 } /* end plugin */

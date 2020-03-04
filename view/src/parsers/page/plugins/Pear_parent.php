@@ -11,6 +11,6 @@ class Pear_parent extends PearAbstract
 	{
 		$name = ($name) ?? end(pear::$fragment);
 
-		echo service('view')->page->getBlock($name);
+		echo service('view')->page->getVar($name);
 	}
 } /* end plugin */
