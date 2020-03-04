@@ -3,11 +3,11 @@
 namespace projectorangebox\page\traits;
 
 use projectorangebox\page\Page;
-use projectorangebox\page\PageInterface;
+use projectorangebox\view\parsers\ParserInterface;
 
 trait ElementsTrait
 {
-	public function meta($attr, string $name = null, string $content = null, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
+	public function meta($attr, string $name = null, string $content = null, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
 	{
 		if (is_array($attr)) {
 			extract($attr);
@@ -16,27 +16,27 @@ trait ElementsTrait
 		return $this->add('meta', '<meta ' . $attr . '="' . $name . '"' . (($content) ? ' content="' . $content . '"' : '') . '>' . PHP_EOL, $priority);
 	}
 
-	public function script(string $script, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
+	public function script(string $script, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
 	{
 		return $this->add('script', $script . PHP_EOL, $priority);
 	}
 
-	public function domready(string $script, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
+	public function domready(string $script, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
 	{
 		return $this->add('domready', $script . PHP_EOL, $priority);
 	}
 
-	public function title(string $title = '', int $priority = PAGE::PRIORITY_NORMAL): PageInterface
+	public function title(string $title = '', int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
 	{
 		return $this->add('title', $title, $priority);
 	}
 
-	public function style(string $style, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
+	public function style(string $style, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
 	{
 		return $this->add('style', $style . PHP_EOL, $priority);
 	}
 
-	public function js($file = '', int $priority = PAGE::PRIORITY_NORMAL): PageInterface
+	public function js($file = '', int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
 	{
 		if (is_array($file)) {
 			foreach ($file as $f) {
@@ -48,7 +48,7 @@ trait ElementsTrait
 		return $this->add('js', $this->scriptHtml($file) . PHP_EOL, $priority);
 	}
 
-	public function css($file = '', int $priority = PAGE::PRIORITY_NORMAL): PageInterface
+	public function css($file = '', int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
 	{
 		if (is_array($file)) {
 			foreach ($file as $f) {
@@ -60,7 +60,7 @@ trait ElementsTrait
 		return $this->add('css', $this->linkHtml($file) . PHP_EOL, $priority);
 	}
 
-	public function jsVariable(string $key, $value, int $priority = PAGE::PRIORITY_NORMAL, bool $raw = false): PageInterface
+	public function jsVariable(string $key, $value, int $priority = PAGE::PRIORITY_NORMAL, bool $raw = false): ParserInterface
 	{
 		if ($raw) {
 			$value = 'var ' . $key . '=' . $value . ';';
@@ -71,7 +71,7 @@ trait ElementsTrait
 		return $this->add('jsVariables', $value, $priority);
 	}
 
-	public function jsVariables(array $array): PageInterface
+	public function jsVariables(array $array): ParserInterface
 	{
 		foreach ($array as $k => $v) {
 			$this->jsVariable($k, $v);
@@ -80,12 +80,12 @@ trait ElementsTrait
 		return $this;
 	}
 
-	public function bodyClass($class, int $priority = PAGE::PRIORITY_NORMAL): PageInterface
+	public function bodyClass($class, int $priority = PAGE::PRIORITY_NORMAL): ParserInterface
 	{
 		return (is_array($class)) ? $this->_bodyClass($class, $priority) : $this->_bodyClass(explode(' ', $class), $priority);
 	}
 
-	public function add(string $name, string $value, int $priority = PAGE::PRIORITY_NORMAL, bool $prevent_duplicates = true): PageInterface
+	public function add(string $name, string $value, int $priority = PAGE::PRIORITY_NORMAL, bool $prevent_duplicates = true): ParserInterface
 	{
 		$name = $this->variablesPrefix . $name;
 		$key = md5($value);
@@ -138,7 +138,7 @@ trait ElementsTrait
 		return rtrim($atts, ',');
 	}
 
-	protected function _bodyClass(array $class, int $priority): PageInterface
+	protected function _bodyClass(array $class, int $priority): ParserInterface
 	{
 		foreach ($class as $c) {
 			$this->add('body_class', ' ' . strtolower(trim($c)), $priority);

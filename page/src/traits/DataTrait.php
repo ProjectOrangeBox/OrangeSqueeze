@@ -2,18 +2,18 @@
 
 namespace projectorangebox\page\traits;
 
-use projectorangebox\page\PageInterface;
+use projectorangebox\view\parsers\ParserInterface;
 
 trait DataTrait
 {
-	public function var(string $name, $value): PageInterface
+	public function var(string $name, $value): ParserInterface
 	{
 		$this->viewData[$name] = $value;
 
 		return $this;
 	}
 
-	public function vars(array $array): PageInterface
+	public function vars(array $array): ParserInterface
 	{
 		foreach ($array as $key => $value) {
 			$this->viewData[$key] = $value;
@@ -58,7 +58,7 @@ trait DataTrait
 		return $this->viewData;
 	}
 
-	public function clearVars(): PageInterface
+	public function clearVars(): ParserInterface
 	{
 		$this->viewData = [];
 

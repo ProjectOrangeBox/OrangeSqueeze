@@ -6,12 +6,11 @@ use FS;
 use Pear;
 use projectorangebox\page\traits\DataTrait;
 use projectorangebox\page\traits\ElementsTrait;
-use projectorangebox\response\ResponseInterface;
 use projectorangebox\common\exceptions\mvc\ParserException;
 use projectorangebox\common\exceptions\mvc\ViewNotFoundException;
-use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
+use projectorangebox\view\parsers\ParserInterface;
 
-class Page implements PageInterface
+class Page implements ParserInterface
 {
 	use DataTrait;
 	use ElementsTrait;
@@ -32,6 +31,7 @@ class Page implements PageInterface
 	protected $link_attributes;
 	protected $script_attributes;
 	protected $variablesPrefix = 'add::';
+	protected $cacheFolder = '';
 
 	public function __construct(array &$config)
 	{
@@ -42,6 +42,8 @@ class Page implements PageInterface
 
 		/* views we know of */
 		$this->views = $config['views'] ?? [];
+
+		$this->cacheFolder = $config['cache folder'] ?? '';
 
 		/* if a default view was sent in set it */
 		if (isset($config['default view'])) {
@@ -78,8 +80,36 @@ class Page implements PageInterface
 		\log_message('info', 'Page Class Initialized');
 	}
 
+	public function add(string $name, string $value): ParserInterface
+	{
+		$this->views[$name] = $value;
+
+		return $this;
+	}
+
+	public function exists(string $view): bool
+	{
+		return \array_key_exists($view, $this->views);
+	}
+
+	public function parse(string $view, array $data = []): string
+	{
+		return $this->render($view, $data);
+	}
+
+	public function parse_string(string $string, array $data = []): string
+	{
+		$path = $this->cacheFolder . '/' . md5($string);
+
+		FS::file_put_contents($path, $string, FILE_APPEND | LOCK_EX);
+
+		$this->add('/' . md5($string), $path);
+
+		return $this->render($path, $data);
+	}
+
 	/* set by router */
-	public function setDefaultView(string $defaultView): PageInterface
+	public function setDefaultView(string $defaultView): ParserInterface
 	{
 		$this->defaultView = $defaultView;
 
@@ -125,7 +155,7 @@ class Page implements PageInterface
 		return ($return === true) ? $buffer : $this;
 	}
 
-	public function extend(string $template = null): PageInterface
+	public function extend(string $template = null): ParserInterface
 	{
 		if ($this->extending) {
 			throw new ParserException('You are already extending "' . $this->extending . '" therefore we cannot extend "' . $template . '".');
