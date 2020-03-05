@@ -2,7 +2,7 @@
 
 namespace projectorangebox\html\plugins;
 
-use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
+use projectorangebox\pear\PearPluginAbstract;
 
 class Pear_html extends PearPluginAbstract
 {

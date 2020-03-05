@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\view\parsers\page\pear;
+namespace projectorangebox\pear;
 
 abstract class PearPluginAbstract
 {

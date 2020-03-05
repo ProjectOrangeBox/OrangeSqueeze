@@ -8,8 +8,6 @@ use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
 
 class Page extends ParserAbstract implements ParserInterface
 {
-	protected $views = [];
-	protected $cacheFolder = '';
 	protected $defaultView = '';
 	protected $extending = [];
 
@@ -20,31 +18,27 @@ class Page extends ParserAbstract implements ParserInterface
 		$this->defaultView = $config['default view'] ?? '';
 	}
 
-	public function render(string $view = null, array $data = []): string
+	public function parse(string $view, array $data = []): string
 	{
-		$view = ($view) ?? $this->defaultView;
+		/* if they send in '@' for "auto" use the default view */
+		$view = ($view == '@') ? $this->defaultView : $view;
 
-		return $this->parse($view, $data);
+		$this->extending[] = $view;
+
+		while ($view = array_pop($this->extending)) {
+			$viewContent = $this->parseSingle($view, $data);
+		}
+
+		return $viewContent;
 	}
 
-	public function parse(string $view, array $data = []): string
+	public function parseSingle(string $view, array $data): string
 	{
 		if (!$this->exists($view)) {
 			throw new TemplateNotFoundException($view);
 		}
 
-		$this->extending[] = $view;
-
-		while ($view = array_pop($this->extending)) {
-			$viewContent = $this->_parse($this->views[$view], $data);
-		}
-
-		return trim($viewContent);
-	}
-
-	public function getView(string $name)
-	{
-		return $this->views[$name] ?? false;
+		return $this->_parse($this->views[$view], $data);
 	}
 
 	/* set by router */

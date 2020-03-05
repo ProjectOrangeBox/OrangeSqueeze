@@ -1,9 +1,9 @@
 <?php
 
-namespace projectorangebox\view\parsers\page\plugins;
+namespace projectorangebox\pear\plugins;
 
 use Pear;
-use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
+use projectorangebox\pear\PearPluginAbstract;
 
 class Pear_include extends PearPluginAbstract
 {
@@ -12,7 +12,7 @@ class Pear_include extends PearPluginAbstract
 		$viewService = service('view');
 
 		if ($templatePath = $viewService->page->getView($view)) {
-			$output = $viewService->page->_parse($templatePath, $data, $name);
+			$output = $viewService->page->parseSingle($templatePath, $data);
 
 			if (is_string($name)) {
 				Pear::$fragmentContents[$name] = $output;

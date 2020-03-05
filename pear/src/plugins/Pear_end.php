@@ -1,10 +1,10 @@
 <?php
 
-namespace projectorangebox\view\parsers\page\plugins;
+namespace projectorangebox\pear\plugins;
 
 use Pear;
 use Exception;
-use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
+use projectorangebox\pear\PearPluginAbstract;
 
 class Pear_end extends PearPluginAbstract
 {

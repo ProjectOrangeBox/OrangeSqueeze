@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\view\parsers\page;
+namespace projectorangebox\pear;
 
 use FS;
 

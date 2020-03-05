@@ -1,8 +1,8 @@
 <?php
 
-namespace projectorangebox\view\parsers\page\plugins;
+namespace projectorangebox\pear\plugins;
 
-use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
+use projectorangebox\pear\PearPluginAbstract;
 
 class Pear_extends extends PearPluginAbstract
 {
