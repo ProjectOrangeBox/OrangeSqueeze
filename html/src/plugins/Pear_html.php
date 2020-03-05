@@ -1,13 +1,13 @@
 <?php
 
-namespace projectorangebox\view\parsers\page\plugins;
+namespace projectorangebox\html\plugins;
 
 use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
 
-class Pear_extends extends PearPluginAbstract
+class Pear_html extends PearPluginAbstract
 {
 	public function render(string $name = null)
 	{
-		service('view')->page->extend($name);
+		echo service('html')->get($name);
 	}
 } /* end plugin */

@@ -72,7 +72,7 @@ class View implements ViewInterface
 	}
 
 	/******************
-	 * add data
+	 * view data
 	 ******************/
 
 	public function var(string $name, $value): ViewInterface

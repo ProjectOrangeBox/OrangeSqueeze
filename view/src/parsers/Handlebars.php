@@ -145,7 +145,7 @@ class Handlebars implements ParserInterface
 		return $this;
 	}
 
-	public function add(string $name, string $value): ParserInterface
+	public function addView(string $name, string $value): ParserInterface
 	{
 		$this->addTemplate($name, $value);
 

@@ -33,11 +33,10 @@ abstract class ParserAbstract
 		/* set delimiters */
 		$this->delimiters = (is_array($l)) ? $l : [$l, $r];
 
-		/* chain-able */
 		return $this;
 	}
 
-	public function add(string $name, string $value): ParserInterface
+	public function addView(string $name, string $value): ParserInterface
 	{
 		$this->views[$name] = $value;
 

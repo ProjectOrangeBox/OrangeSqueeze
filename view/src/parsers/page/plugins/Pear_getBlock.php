@@ -2,12 +2,13 @@
 
 namespace projectorangebox\view\parsers\page\plugins;
 
+use Pear;
 use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
 
-class Pear_extends extends PearPluginAbstract
+class Pear_getBlock extends PearPluginAbstract
 {
 	public function render(string $name = null)
 	{
-		service('view')->page->extend($name);
+		echo Pear::$fragmentContents[$name] ?? '';
 	}
 } /* end plugin */

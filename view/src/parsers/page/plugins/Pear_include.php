@@ -2,20 +2,20 @@
 
 namespace projectorangebox\view\parsers\page\plugins;
 
-use projectorangebox\view\parsers\page\Page;
-use projectorangebox\view\parsers\page\pear\PearAbstract;
+use Pear;
+use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
 
-class Pear_include extends PearAbstract
+class Pear_include extends PearPluginAbstract
 {
 	public function render(string $view = null, array $data = [], $name = true)
 	{
 		$viewService = service('view');
 
-		if ($viewService->page->exists($view)) {
-			$output = $viewService->page->_parse($viewService->page->findView($view), $data, $name);
+		if ($templatePath = $viewService->page->findView($view)) {
+			$output = $viewService->page->_parse($templatePath, $data, $name);
 
 			if (is_string($name)) {
-				$viewService->page->setVar($name, $output, Page::REPLACE);
+				Pear::$fragmentContents[$name] = $output;
 			} else {
 				echo $output;
 			}

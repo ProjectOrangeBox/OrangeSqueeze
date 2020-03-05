@@ -3,7 +3,7 @@
 namespace projectorangebox\view\parsers\page\plugins;
 
 use Pear;
-use projectorangebox\view\parsers\page\pear\PearAbstract;
+use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
 
 /**
  * Validation Filter
@@ -19,7 +19,7 @@ use projectorangebox\view\parsers\page\pear\PearAbstract;
  *
  */
 
-class Pear_plugins extends PearAbstract
+class Pear_plugins extends PearPluginAbstract
 {
 	public function render($plugins = null)
 	{

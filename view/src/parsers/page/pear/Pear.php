@@ -2,29 +2,28 @@
 
 #namespace \
 
-use projectorangebox\view\ViewInterface;
-use projectorangebox\view\parsers\ParserInterface;
-use projectorangebox\view\parsers\page\pear\PearAbstract;
 use projectorangebox\view\parsers\page\pear\PearInterface;
+use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
 use projectorangebox\common\exceptions\php\ClassNotFoundException;
 use projectorangebox\common\exceptions\mvc\PluginNotFoundException;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class Pear implements PearInterface
 {
-	protected static $pageClass;
 	protected static $plugins = [];
 
 	public static $fragment = [];
+	public static $fragmentContents = [];
 
-	public static function _construct(array $plugins, ParserInterface $pageClass): void
+	public static function _construct(array $plugins): void
 	{
 		self::$plugins = $plugins;
-		self::$pageClass = $pageClass;
 	}
 
 	public static function __callStatic(string $name, array $arguments = [])
 	{
+		println($name);
+
 		$name = 'pear_' . strtolower($name);
 
 		\log_message('info', 'Pear::__callStatic::' . $name);
@@ -39,10 +38,14 @@ class Pear implements PearInterface
 			throw new ClassNotFoundException($namespacedClass);
 		}
 
-		$plugin = new $namespacedClass(self::$pageClass);
+		$plugin = new $namespacedClass;
 
-		if (!($plugin instanceof PearAbstract)) {
-			throw new IncorrectInterfaceException('PearInterface');
+		if (!($plugin instanceof PearPluginAbstract)) {
+			throw new IncorrectInterfaceException('PearPluginAbstract');
+		}
+
+		if (!method_exists($plugin, 'render')) {
+			throw new BadMethodCallException('PearInterface');
 		}
 
 		/* using call_user_func_array because arguments is undetermined */

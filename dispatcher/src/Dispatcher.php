@@ -113,18 +113,10 @@ class Dispatcher implements DispatcherInterface
 		/* format the parameters */
 		$parameters = $this->replace($parameters);
 
-		/*  Turn on output buffering */
-		ob_start();
-
 		/* call the controller method */
-		$returned = \call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')));
-
-		if (\is_string($returned) && !empty($returned)) {
-			$this->responseService->append($returned);
+		if ($output = call_user_func_array([$controller, $method], explode('/', trim($parameters, '/')))) {
+			$this->responseService->append($output);
 		}
-
-		/* Flush the output buffer, return it as a string and turn off output buffering */
-		$this->responseService->append(ob_get_flush());
 
 		/* middleware output */
 		if ($this->hasMiddlewareHandlerService) {

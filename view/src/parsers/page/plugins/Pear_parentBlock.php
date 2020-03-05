@@ -3,14 +3,14 @@
 namespace projectorangebox\view\parsers\page\plugins;
 
 use pear;
-use projectorangebox\view\parsers\page\pear\PearAbstract;
+use projectorangebox\view\parsers\page\pear\PearPluginAbstract;
 
-class Pear_parent extends PearAbstract
+class Pear_parentBlock extends PearPluginAbstract
 {
 	public function render(string $name = null)
 	{
 		$name = ($name) ?? end(pear::$fragment);
 
-		echo service('view')->page->getVar($name);
+		echo Pear::$fragmentContents[$name];
 	}
 } /* end plugin */
