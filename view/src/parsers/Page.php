@@ -2,10 +2,8 @@
 
 namespace projectorangebox\view\parsers;
 
-use Pear;
 use projectorangebox\view\parsers\ParserAbstract;
 use projectorangebox\view\parsers\ParserInterface;
-use projectorangebox\common\exceptions\mvc\ViewNotFoundException;
 use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
 
 class Page extends ParserAbstract implements ParserInterface
@@ -19,29 +17,14 @@ class Page extends ParserAbstract implements ParserInterface
 	{
 		parent::__construct($config);
 
-		/* if a default view was sent in set it */
-		if (isset($config['default view'])) {
-			$this->setDefaultView($config['default view']);
-		}
-
-		/* global namespaced static class pear:: so we must manually load it */
-		require __DIR__ . '/page/pear/Pear.php';
-
-		/* "inject" plugins */
-		Pear::_construct($config['plugins'], $this);
-
-		\log_message('info', 'Page Class Initialized');
+		$this->defaultView = $config['default view'] ?? '';
 	}
 
 	public function render(string $view = null, array $data = []): string
 	{
 		$view = ($view) ?? $this->defaultView;
 
-		if ($view == null) {
-			throw new ViewNotFoundException();
-		}
-
-		return trim($this->parse($view, $data));
+		return $this->parse($view, $data);
 	}
 
 	public function parse(string $view, array $data = []): string
@@ -59,7 +42,7 @@ class Page extends ParserAbstract implements ParserInterface
 		return trim($viewContent);
 	}
 
-	public function findView(string $name)
+	public function getView(string $name)
 	{
 		return $this->views[$name] ?? false;
 	}

@@ -3,7 +3,7 @@
 namespace projectorangebox\view\parsers;
 
 use FS;
-use projectorangebox\view\ParserAbstract;
+use projectorangebox\view\parsers\ParserAbstract;
 use projectorangebox\view\parsers\ParserInterface;
 
 class Ci extends ParserAbstract implements ParserInterface

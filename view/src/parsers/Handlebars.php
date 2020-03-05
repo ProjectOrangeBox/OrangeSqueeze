@@ -122,7 +122,7 @@ class Handlebars implements ParserInterface
 	 * @param	bool
 	 * @return	string
 	 */
-	public function parse_string(string $templateStr, array $data = []): string
+	public function parseString(string $templateStr, array $data = []): string
 	{
 		\log_message('info', 'handlebars parse string ' . substr($templateStr, 0, 128) . '...');
 
@@ -277,7 +277,7 @@ class Handlebars implements ParserInterface
 				$comment = $template;
 			} else {
 				$source = $template;
-				$comment = 'parse_string_' . md5($template);
+				$comment = 'parseString_' . md5($template);
 			}
 
 			$this->saveCompileFile($compiledFile, $this->compile($source, $comment));

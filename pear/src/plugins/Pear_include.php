@@ -11,7 +11,7 @@ class Pear_include extends PearPluginAbstract
 	{
 		$viewService = service('view');
 
-		if ($templatePath = $viewService->page->findView($view)) {
+		if ($templatePath = $viewService->page->getView($view)) {
 			$output = $viewService->page->_parse($templatePath, $data, $name);
 
 			if (is_string($name)) {

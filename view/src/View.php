@@ -46,14 +46,20 @@ class View implements ViewInterface
 		$this->knownParsers[$extension] = $parser;
 	}
 
-	public function parse(string $view, array $data = []): string
+	public function parse(string $view, array $data = [], string $ext = null): string
 	{
+		$ext = $ext ?? $this->parserOrder[0];
+
 		$output = null;
 
-		/* search for the view - search order based on the parser config order */
-		foreach ($this->parserOrder as $name) {
-			if ($this->knownParsers[$name]->exists($view)) {
-				$output = $this->knownParsers[$name]->parse($view, $data);
+		if ($this->knownParsers[$ext]->exists($view)) {
+			$output = $this->knownParsers[$ext]->parse($view, $data);
+		} else {
+			/* search for the view - search order based on the parser config order */
+			foreach ($this->parserOrder as $name) {
+				if ($this->knownParsers[$name]->exists($view)) {
+					$output = $this->knownParsers[$name]->parse($view, $data);
+				}
 			}
 		}
 
@@ -64,11 +70,11 @@ class View implements ViewInterface
 		return $output;
 	}
 
-	public function parse_string(string $string, array $data = [], string $ext = null): string
+	public function parseString(string $string, array $data = [], string $ext = null): string
 	{
-		$ext = $ext ?? array_key_first($this->parserOrder);
+		$ext = $ext ?? $this->parserOrder[0];
 
-		return $this->knownParsers[$ext]->parse_string($string, $data);
+		return $this->knownParsers[$ext]->parseString($string, $data);
 	}
 
 	/******************

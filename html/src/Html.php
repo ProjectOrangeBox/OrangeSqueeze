@@ -2,7 +2,7 @@
 
 namespace projectorangebox\html;
 
-class Html
+class Html implements HtmlInterface
 {
 	const PRIORITY_LOWEST = 10;
 	const PRIORITY_LOW = 20;
@@ -44,32 +44,32 @@ class Html
 		}
 	}
 
-	public function meta(string $attr, string $name = null, string $content = null, int $priority = Html::PRIORITY_NORMAL)
+	public function meta(string $attr, string $name = null, string $content = null, int $priority = Html::PRIORITY_NORMAL): HtmlInterface
 	{
 		return $this->set('meta', '<meta ' . $attr . '="' . $name . '"' . (($content) ? ' content="' . $content . '"' : '') . '>' . PHP_EOL, $priority);
 	}
 
-	public function script(string $script, int $priority = Html::PRIORITY_NORMAL)
+	public function script(string $script, int $priority = Html::PRIORITY_NORMAL): HtmlInterface
 	{
 		return $this->set('script', $script . PHP_EOL, $priority);
 	}
 
-	public function domready(string $script, int $priority = Html::PRIORITY_NORMAL)
+	public function domready(string $script, int $priority = Html::PRIORITY_NORMAL): HtmlInterface
 	{
 		return $this->set('domready', $script . PHP_EOL, $priority);
 	}
 
-	public function title(string $title = '')
+	public function title(string $title = ''): HtmlInterface
 	{
 		return $this->set('title', $title, Html::REPLACE);
 	}
 
-	public function style(string $style, int $priority = Html::PRIORITY_NORMAL)
+	public function style(string $style, int $priority = Html::PRIORITY_NORMAL): HtmlInterface
 	{
 		return $this->set('style', $style . PHP_EOL, $priority);
 	}
 
-	public function js($file = '', int $priority = Html::PRIORITY_NORMAL)
+	public function js($file = '', int $priority = Html::PRIORITY_NORMAL): HtmlInterface
 	{
 		if (is_array($file)) {
 			foreach ($file as $f) {
@@ -81,7 +81,7 @@ class Html
 		return $this->set('js', $this->scriptHtml($file) . PHP_EOL, $priority);
 	}
 
-	public function css($file = '', int $priority = Html::PRIORITY_NORMAL)
+	public function css($file = '', int $priority = Html::PRIORITY_NORMAL): HtmlInterface
 	{
 		if (is_array($file)) {
 			foreach ($file as $f) {
@@ -93,7 +93,7 @@ class Html
 		return $this->set('css', $this->linkHtml($file) . PHP_EOL, $priority);
 	}
 
-	public function jsVariable(string $key, $value, int $priority = Html::PRIORITY_NORMAL, bool $raw = false)
+	public function jsVariable(string $key, $value, int $priority = Html::PRIORITY_NORMAL, bool $raw = false): HtmlInterface
 	{
 		if ($raw) {
 			$value = 'var ' . $key . '=' . $value . ';';
@@ -104,7 +104,7 @@ class Html
 		return $this->set('jsVariables', $value, $priority);
 	}
 
-	public function jsVariables(array $array)
+	public function jsVariables(array $array): HtmlInterface
 	{
 		foreach ($array as $k => $v) {
 			$this->jsVariable($k, $v);
@@ -113,7 +113,7 @@ class Html
 		return $this;
 	}
 
-	public function bodyClass($class)
+	public function bodyClass($class): HtmlInterface
 	{
 		$classes = (is_array($class)) ? $class : explode(' ', $class);
 
@@ -167,7 +167,7 @@ class Html
 	 * 1 - prevent duplicates
 	 * 2 - replace
 	 */
-	public function set(string $name, string $value, int $priority = Html::PRIORITY_NORMAL, int $options = 0)
+	public function set(string $name, string $value, int $priority = Html::PRIORITY_NORMAL, int $options = 0): HtmlInterface
 	{
 		$key = md5($name . $value);
 

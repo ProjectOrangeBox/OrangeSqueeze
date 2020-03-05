@@ -3,8 +3,8 @@
 namespace projectorangebox\view\parsers;
 
 use FS;
+use projectorangebox\view\parsers\ParserAbstract;
 use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
-use projectorangebox\view\ParserAbstract;
 
 /**
  * Part of the Lex Template Parser.
@@ -63,7 +63,7 @@ class Lex extends ParserAbstract implements ParserInterface
 		return $this->lex_parse(FS::file_get_contents($this->views[$view]), $data);
 	}
 
-	public function parse_string(string $string, array $data = []): string
+	public function parseString(string $string, array $data = []): string
 	{
 		return $this->lex_parse($string, $data);
 	}

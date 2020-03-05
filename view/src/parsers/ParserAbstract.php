@@ -6,14 +6,13 @@ use FS;
 use projectorangebox\view\parsers\ParserInterface;
 use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
 
-abstract class ParserAbstract
+abstract class ParserAbstract implements ParserInterface
 {
 	protected $config = [];
 	protected $views = [];
 	protected $cacheFolder = '';
 	protected $forceCompile = true;
 	protected $delimiters = ['{', '}'];
-	protected $viewData = [];
 
 	public function __construct(array &$config)
 	{
@@ -57,11 +56,13 @@ abstract class ParserAbstract
 		return $this->_parse($this->views[$view], $data);
 	}
 
-	public function parse_string(string $string, array $data = []): string
+	public function parseString(string $string, array $data = []): string
 	{
 		$path = $this->cacheFolder . '/' . md5($string);
 
-		FS::file_put_contents($path, $string);
+		if ($this->forceCompile || !FS::file_exists($path)) {
+			FS::file_put_contents($path, $string);
+		}
 
 		return $this->_parse($path, $data);
 	}

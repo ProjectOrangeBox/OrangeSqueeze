@@ -8,5 +8,5 @@ interface ParserInterface
 	public function exists(string $name): bool;
 	public function addView(string $name, string $value): ParserInterface;
 	public function parse(string $view, array $data = []): string;
-	public function parse_string(string $string, array $data = []): string;
+	public function parseString(string $string, array $data = []): string;
 }

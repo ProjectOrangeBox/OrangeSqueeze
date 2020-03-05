@@ -9,6 +9,15 @@ use projectorangebox\view\parsers\ParserInterface;
 
 class Markdown extends ParserAbstract implements ParserInterface
 {
+	protected $merge = false;
+
+	public function __construct(array &$config)
+	{
+		parent::__construct($config);
+
+		$this->merge = $config['merge'] ?? $this->merge;
+	}
+
 	public function _parse(string $__path, array $__data = []): string
 	{
 		$compiledFile = $this->cacheFolder . '/' . md5($__path) . '.php';
@@ -19,6 +28,6 @@ class Markdown extends ParserAbstract implements ParserInterface
 			$output = FS::file_get_contents($compiledFile);
 		}
 
-		return $this->merge($output, $__data, $this->delimiters);
+		return ($this->merge) ? $this->merge($output, $__data, $this->delimiters) : $output;
 	}
 } /* end class */
