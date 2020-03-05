@@ -48,14 +48,13 @@ class Handlebars implements ParserInterface
 {
 	protected $config = [];
 
-	protected $plugins; /* actual plugins after loaded */
-
-	protected $cacheFolder = '';
+	protected $cacheFolder = '/var/cache/handlebars';
 	protected $templates = [];
 	protected $partials = [];
-	protected $forceCompile = true;
+	protected $forceCompile = DEBUG;
 	protected $HBCachePrefix = 'hbs.';
 	protected $delimiters = ['{{', '}}'];
+	protected $helpers = [];
 
 	/**
 	 * Constructor - Sets Handlebars Preferences
@@ -68,13 +67,13 @@ class Handlebars implements ParserInterface
 	{
 		$this->config = &$config;
 
-		$this->cacheFolder = $config['cache folder'] ?? '/var/cache/handlebars';
-		$this->plugins = $config['plugins'] ?? [];
-		$this->templates = $config['templates'] ?? [];
-		$this->partials = $config['partials'] ?? [];
-		$this->forceCompile = $config['forceCompile'] ?? DEBUG;
-		$this->HBCachePrefix = $config['HBCachePrefix'] ?? 'hbs.';
-		$this->delimiters = $config['delimiters'] ?? ['{{', '}}'];
+		$this->cacheFolder = $config['cache folder'] ?? $this->cacheFolder;
+		$this->templates = $config['templates'] ?? $this->templates;
+		$this->partials = $config['partials'] ?? $this->partials;
+		$this->forceCompile = $config['forceCompile'] ?? $this->forceCompile;
+		$this->HBCachePrefix = $config['HBCachePrefix'] ?? $this->HBCachePrefix;
+		$this->delimiters = $config['delimiters'] ?? $this->delimiters;
+		$this->helpers = $config['helpers'] ?? $this->helpers; /* array of helpers */
 
 		/* lightncandy handlebars compiler flags https://github.com/zordius/lightncandy#compile-options */
 		$this->flags = $config['flags'] ?? LightnCandy::FLAG_ERROR_EXCEPTION | LightnCandy::FLAG_HANDLEBARS | LightnCandy::FLAG_HANDLEBARSJS | LightnCandy::FLAG_RUNTIMEPARTIAL; /* integer */
@@ -82,13 +81,9 @@ class Handlebars implements ParserInterface
 		FS::mkdir($this->cacheFolder);
 	}
 
-	public function exists(string $name): bool
+	public function exists(string $view): bool
 	{
-		$name = strtolower(trim($name, '/'));
-
-		\log_message('info', 'Find ' . $name);
-
-		return isset($this->templates[$name]);
+		return \array_key_exists($view, $this->templates);
 	}
 
 	/* These are just like CodeIgniter regular parser */
@@ -106,8 +101,6 @@ class Handlebars implements ParserInterface
 	 */
 	public function parse(string $templateFile, array $data = []): string
 	{
-		\log_message('info', 'handlebars parse ' . $templateFile);
-
 		return $this->run($this->parseTemplate($templateFile, true), $data);
 	}
 
@@ -124,8 +117,6 @@ class Handlebars implements ParserInterface
 	 */
 	public function parseString(string $templateStr, array $data = []): string
 	{
-		\log_message('info', 'handlebars parse string ' . substr($templateStr, 0, 128) . '...');
-
 		return $this->run($this->parseTemplate($templateStr, false), $data);
 	}
 
@@ -168,13 +159,10 @@ class Handlebars implements ParserInterface
 	{
 		\log_message('info', 'handlebars compiling');
 
-		/* Get our helpers if they aren't already loaded */
-		$this->loadHelpers();
-
 		/* Compile it into php magic! Thank you zordius https://github.com/zordius/lightncandy */
 		return LightnCandy::compile($templateSource, [
 			'flags' => $this->flags, /* compiler flags */
-			'helpers' => $this->plugins, /* Add the plugins (handlebars.js calls helpers) */
+			'helpers' => $this->helpers, /* Add the plugins (handlebars.js calls helpers) */
 			'renderex' => '/* ' . $comment . ' compiled @ ' . date('Y-m-d h:i:s e') . ' */', /* Added to compiled PHP */
 			'delimiters' => $this->delimiters,
 			'partialresolver' => function ($context, $name) { /* partial & template handling */
@@ -185,7 +173,7 @@ class Handlebars implements ParserInterface
 					try {
 						$template = FS::file_get_contents($this->findTemplate($name));
 					} catch (Exception $e) {
-						$template = '<!-- partial named "' . $name . '" could not found --!>';
+						$template = '<!-- partial named "' . $name . '" could not be found --!>';
 					}
 				}
 
@@ -197,21 +185,13 @@ class Handlebars implements ParserInterface
 	/* add template is a path to a file */
 	public function addTemplate(string $name, string $path): Handlebars
 	{
-		$name = strtolower(trim($name, '/'));
-
-		\log_message('info', 'handlebars add template ' . $name);
-
-		$this->templates[$name] = '/' . trim($path, '/');
+		$this->templates[$name] = $path;
 
 		return $this;
 	}
 
 	public function findTemplate(string $name): string
 	{
-		$name = strtolower(trim($name, '/'));
-
-		\log_message('info', 'handlebars find template ' . $name);
-
 		if (!isset($this->templates[$name])) {
 			throw new TemplateNotFoundException($name);
 		}
@@ -222,10 +202,6 @@ class Handlebars implements ParserInterface
 	/* a partial is a string */
 	public function addPartial(string $name, string $string): Handlebars
 	{
-		$name = strtolower(trim($name, '/'));
-
-		\log_message('info', 'handlebars add partial ' . $name);
-
 		$this->partials[$name] = $string;
 
 		return $this;
@@ -233,10 +209,6 @@ class Handlebars implements ParserInterface
 
 	public function findPartial(string $name): string
 	{
-		$name = strtolower(trim($name, '/'));
-
-		\log_message('info', 'handlebars find partial ' . $name);
-
 		if (!isset($this->partials[$name])) {
 			throw new PartialNotFoundException($name);
 		}
@@ -325,43 +297,5 @@ class Handlebars implements ParserInterface
 		}
 
 		return $output;
-	}
-
-	/**
-	 * loadHelpers
-	 *
-	 * @return void
-	 */
-	protected function loadHelpers(): void
-	{
-		\log_message('info', 'handlebars load helpers');
-
-		$cacheFile = $this->cacheFolder . '/' . $this->HBCachePrefix . 'helpers.php';
-
-		if ($this->forceCompile || !FS::file_exists($cacheFile)) {
-			$combined  = '<?php' . PHP_EOL . '/*' . PHP_EOL . 'DO NOT MODIFY THIS FILE' . PHP_EOL . 'Written: ' . date('Y-m-d H:i:s T') . PHP_EOL . '*/' . PHP_EOL . PHP_EOL;
-
-			/* find all of the plugin "services" */
-			if (\is_array($this->plugins)) {
-				foreach ($this->plugins as $path) {
-					$pluginSource  = php_strip_whitespace(FS::resolve($path));
-					$pluginSource  = trim(str_replace(['<?php', '<?', '?>'], '', $pluginSource));
-					$pluginSource  = trim('/* ' . $path . ' */' . PHP_EOL . $pluginSource) . PHP_EOL . PHP_EOL;
-
-					$combined .= $pluginSource;
-				}
-			}
-
-			/* save to the cache folder on this machine (in a multi-machine env each will just recreate this locally) */
-			FS::file_put_contents($cacheFile, trim($combined));
-		}
-
-		/* start with empty array */
-		$plugin = [];
-
-		/* include the combined "cache" file */
-		include FS::resolve($cacheFile);
-
-		$this->plugins = $plugin;
 	}
 } /* end class */
