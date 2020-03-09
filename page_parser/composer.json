@@ -9,7 +9,7 @@
 	"description": "Page",
 	"autoload": {
 		"psr-4": {
-			"projectorangebox\\page\\": "src"
+			"projectorangebox\\page_parser\\": "src"
 		}
 	}
 }

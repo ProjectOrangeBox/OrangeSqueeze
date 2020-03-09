@@ -1,6 +1,22 @@
 <?php
 
 /**
+ * OrangeSqueeze
+ *
+ * This content is released under the MIT License (MIT)
+ * Copyright (c) 2014 - 2020, Project Orange Box
+ *
+ * @package Project Orange Box
+ * @author Don Myers
+ * @copyright 2020
+ * @license http://opensource.org/licenses/MIT MIT License
+ * @link https://github.com/ProjectOrangeBox
+ * @version v1.0
+ * @filesource
+ *
+ */
+
+/**
  * Merge configuration with defaults.
  * If no value is included for a default key
  * then it is required and a value must be included in the passed config
