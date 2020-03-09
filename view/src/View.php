@@ -66,6 +66,8 @@ class View implements ViewInterface
 	{
 		$ext = $ext ?? $this->parserOrder[0];
 
+		$this->knownParser($ext);
+
 		$output = null;
 
 		if ($this->knownParsers[$ext]->exists($view)) {
@@ -90,7 +92,16 @@ class View implements ViewInterface
 	{
 		$ext = $ext ?? $this->parserOrder[0];
 
+		$this->knownParser($ext);
+
 		return $this->knownParsers[$ext]->parseString($string, $data);
+	}
+
+	protected function knownParser(string $ext): void
+	{
+		if (!isset($this->knownParsers[$ext])) {
+			throw new ParserForExtentionNotFoundException($ext);
+		}
 	}
 
 	/******************
