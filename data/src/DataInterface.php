@@ -2,6 +2,6 @@
 
 namespace projectorangebox\data;
 
-class DataInterface
+interface DataInterface
 {
 }

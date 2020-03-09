@@ -7,6 +7,9 @@
 		"role": "Everything"
 	}],
 	"description": "Data",
+	"require": {
+		"adbario/php-dot-notation": "2.x"
+	},
 	"autoload": {
 		"psr-4": {
 			"projectorangebox\\data\\": "src"
