@@ -62,7 +62,7 @@ class View implements ViewInterface
 		$this->knownParsers[$extension] = $parser;
 	}
 
-	public function parse(string $view, array $data = [], string $ext = null): string
+	public function build(string $view): string
 	{
 		$ext = $ext ?? $this->parserOrder[0];
 
@@ -71,12 +71,12 @@ class View implements ViewInterface
 		$output = null;
 
 		if ($this->knownParsers[$ext]->exists($view)) {
-			$output = $this->knownParsers[$ext]->parse($view, $data);
+			$output = $this->knownParsers[$ext]->parse($view, $this->viewData);
 		} else {
 			/* search for the view - search order based on the parser config order */
 			foreach ($this->parserOrder as $name) {
 				if ($this->knownParsers[$name]->exists($view)) {
-					$output = $this->knownParsers[$name]->parse($view, $data);
+					$output = $this->knownParsers[$name]->parse($view, $this->viewData);
 				}
 			}
 		}
@@ -86,15 +86,6 @@ class View implements ViewInterface
 		}
 
 		return $output;
-	}
-
-	public function parseString(string $string, array $data = [], string $ext = null): string
-	{
-		$ext = $ext ?? $this->parserOrder[0];
-
-		$this->knownParser($ext);
-
-		return $this->knownParsers[$ext]->parseString($string, $data);
 	}
 
 	protected function knownParser(string $ext): void

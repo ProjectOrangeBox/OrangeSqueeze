@@ -95,9 +95,11 @@ class Data implements DataInterface
 		return $this->dot->pull($notation, $default);
 	}
 
-	public function push(string $notation, $value)
+	public function push(string $notation, $value): DataInterface
 	{
-		return $this->dot->push($notation, $value);
+		$this->dot->push($notation, $value);
+
+		return $this;
 	}
 
 	/* presistence */

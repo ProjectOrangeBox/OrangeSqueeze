@@ -30,8 +30,7 @@ interface ViewInterface
 	/* set handler for extension */
 	public function __set(string $extension, ParserInterface $parser);
 
-	public function parse(string $view, array $data = [], string $ext = null): string;
-	public function parseString(string $string, array $data = [], string $ext = null): string;
+	public function build(string $view): string;
 
 	public function var(string $name, $value): ViewInterface;
 	public function vars(array $array): ViewInterface;

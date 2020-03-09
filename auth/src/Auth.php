@@ -68,7 +68,7 @@ class Auth implements AuthInterface
 
 	public function error(): string
 	{
-		return $this->error;
+		return $this->error ?? '';
 	}
 
 	public function hasError(): bool
@@ -131,10 +131,16 @@ class Auth implements AuthInterface
 	protected function getUser(string $login)
 	{
 		$query = $this->db->prepare('select `id`,`' . $this->password_column . '`,`' . $this->is_active_column . '` from `' . $this->table . '` where ' . $this->username_column . ' = :login limit 1');
-		$query->execute([':login' => $login]);
-		$row = $query->fetch(PDO::FETCH_ASSOC);
 
-		return ($row) ? $row : false;
+		$query->execute([':login' => $login]);
+
+		$error = $query->errorInfo();
+
+		if (!empty($error[2])) {
+			\log_message('info', __METHOD__ . ' ' . $error[2]);
+		}
+
+		return $query->fetch(PDO::FETCH_ASSOC);
 	}
 
 	public function refresh(): bool

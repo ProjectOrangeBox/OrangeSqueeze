@@ -18,7 +18,6 @@
 
 namespace projectorangebox\models;
 
-use projectorangebox\common\exceptions\mvc\ServiceNotFoundException;
 use projectorangebox\common\exceptions\php\ClassNotFoundException;
 
 class Models implements ModelsInterface
@@ -37,7 +36,7 @@ class Models implements ModelsInterface
 
 		if (!isset($this->models[$name])) {
 			if (!isset($this->config['models'][$name])) {
-				throw new ServiceNotFoundException($name);
+				throw new ClassNotFoundException($name);
 			}
 
 			$modelClass = $this->config['models'][$name];

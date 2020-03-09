@@ -24,10 +24,10 @@ if (!function_exists('show_error')) {
 }
 
 if (!function_exists('dieOnError')) {
-	function dieOnError(int $code, string $keys)
+	function dieOnError(int $code, string $notation = null)
 	{
-		if (service('collector')->has($keys)) {
-			service('formatter')->send($code)->display(['errors' => service('collector')->collect($keys)]);
+		if (service('data')->has($notation)) {
+			service('formatter')->send($code)->display(['errors' => service('data')->get($notation)]);
 		}
 	}
 }
@@ -55,9 +55,9 @@ if (!function_exists('redirect')) {
 }
 
 if (!function_exists('e')) {
-	function e($input) : string
+	function e($input): string
 	{
-		return (empty($input)) ? '' : html_escape($input);
+		return (empty($input)) ? '' : \htmlspecialchars($input);
 	}
 }
 
@@ -70,7 +70,7 @@ if (!function_exists('e')) {
  *
  */
 if (!function_exists('unlock_session')) {
-	function unlock_session() : void
+	function unlock_session(): void
 	{
 		session_write_close();
 	}
@@ -84,9 +84,9 @@ if (!function_exists('unlock_session')) {
  *
  */
 if (!function_exists('console')) {
-	function console($var, string $type = 'log') : void
+	function console($var, string $type = 'log'): void
 	{
-		echo '<script type="text/javascript">console.'.$type.'('.json_encode($var).')</script>';
+		echo '<script type="text/javascript">console.' . $type . '(' . json_encode($var) . ')</script>';
 	}
 }
 
@@ -105,22 +105,22 @@ if (!function_exists('convert_to_real')) {
 	{
 		/* return on first match multiple exists */
 		switch (trim(strtolower($value))) {
-		case 'true':
-			return true;
-			break;
-		case 'false':
-			return false;
-			break;
-		case 'empty':
-			return '';
-			break;
-		case 'null':
-			return null;
-			break;
-		default:
-			if (is_numeric($value)) {
-				return (is_float($value)) ? (float)$value : (int)$value;
-			}
+			case 'true':
+				return true;
+				break;
+			case 'false':
+				return false;
+				break;
+			case 'empty':
+				return '';
+				break;
+			case 'null':
+				return null;
+				break;
+			default:
+				if (is_numeric($value)) {
+					return (is_float($value)) ? (float) $value : (int) $value;
+				}
 		}
 
 		$json = @json_decode($value, true);
@@ -140,7 +140,7 @@ if (!function_exists('convert_to_real')) {
  *
  */
 if (!function_exists('convert_to_string')) {
-	function convert_to_string($value) : string
+	function convert_to_string($value): string
 	{
 		/* return on first match multiple exists */
 
@@ -182,11 +182,11 @@ if (!function_exists('convert_to_string')) {
  * ```
  */
 if (!function_exists('quick_merge')) {
-	function quick_merge(string $template, array $data=[]) : string
+	function quick_merge(string $template, array $data = []): string
 	{
 		if (preg_match_all('/{([^}]+)}/m', $template, $matches)) {
 			foreach ($matches[1] as $key) {
-				$template = str_replace('{'.$key.'}', $data[$key], $template);
+				$template = str_replace('{' . $key . '}', $data[$key], $template);
 			}
 		}
 
