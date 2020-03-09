@@ -1,9 +1,9 @@
 <?php
 
-namespace projectorangebox\view\parsers;
+namespace projectorangebox\page_parser;
 
-use projectorangebox\view\parsers\ParserAbstract;
-use projectorangebox\view\parsers\ParserInterface;
+use projectorangebox\view\ParserInterface;
+use projectorangebox\view\ParserAbstract;
 use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
 
 class Page extends ParserAbstract implements ParserInterface

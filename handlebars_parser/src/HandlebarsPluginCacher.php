@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\view\parsers;
+namespace projectorangebox\handlebars_parser;
 
 use FS;
 

@@ -3,15 +3,15 @@
 namespace projectorangebox\view;
 
 use projectorangebox\view\ViewInterface;
-use projectorangebox\view\parsers\ParserInterface;
-use projectorangebox\common\exceptions\mvc\ViewNotFoundException;
+use projectorangebox\view\ParserInterface;
+use projectorangebox\view\exceptions\ViewNotFoundException;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
-use projectorangebox\common\exceptions\mvc\ParserForExtentionNotFoundException;
+use projectorangebox\view\exceptions\ParserForExtentionNotFoundException;
 
 class View implements ViewInterface
 {
-	protected $knownParsers;
 	protected $config = [];
+	protected $knownParsers;
 	protected $parserOrder = [];
 	protected $viewData = [];
 

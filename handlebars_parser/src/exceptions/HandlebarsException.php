@@ -1,6 +1,6 @@
 <?php
 
-namespace projectorangebox\view\parsers\exceptions;
+namespace projectorangebox\handlebars_parser\exceptions;
 
 use Exception;
 

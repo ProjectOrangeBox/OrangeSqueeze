@@ -127,7 +127,11 @@ class Config implements ConfigInterface
 		$file = __ROOT__ . '/' . trim($this->config['config']['folder'], '/') . '/' . $filename . '.php';
 
 		if (file_exists($file)) {
-			$this->config[$filename] = require($file);
+			$array = require($file);
+
+			if ($array !== 1) {
+				$this->config[$filename] = $array;
+			}
 		}
 	}
 } /* end class */

@@ -32,6 +32,11 @@ class Cache implements CacheInterface
 		$this->defaultService = $this->knownCacheServices[$default];
 	}
 
+	public function has(string $name): bool
+	{
+		return \array_key_exists($name, $this->knownCacheServices);
+	}
+
 	public function __get(string $name): CacheInterface
 	{
 		return $this->knownCacheServices[$name] ?? null;

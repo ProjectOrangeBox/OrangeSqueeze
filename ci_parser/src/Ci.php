@@ -1,10 +1,10 @@
 <?php
 
-namespace projectorangebox\view\parsers;
+namespace projectorangebox\ci_parser;
 
 use FS;
-use projectorangebox\view\parsers\ParserAbstract;
-use projectorangebox\view\parsers\ParserInterface;
+use projectorangebox\view\ParserInterface;
+use projectorangebox\view\ParserAbstract;
 
 class Ci extends ParserAbstract implements ParserInterface
 {
@@ -23,6 +23,7 @@ class Ci extends ParserAbstract implements ParserInterface
 
 		foreach ($data as $key => $val) {
 			$merge = is_array($val) ? $this->_parse_pair($key, $val, $template) : $this->_parse_single($key, (string) $val, $template);
+
 			$replace = array_merge($replace, $merge);
 		}
 
@@ -74,6 +75,7 @@ class Ci extends ParserAbstract implements ParserInterface
 				foreach ($row as $key => $val) {
 					if (is_array($val)) {
 						$pair = $this->_parse_pair($key, $val, $match[1]);
+
 						if (!empty($pair)) {
 							$temp = array_merge($temp, $pair);
 						}

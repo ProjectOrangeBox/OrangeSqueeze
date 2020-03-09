@@ -1,10 +1,10 @@
 <?php
 
-namespace projectorangebox\view\parsers;
+namespace projectorangebox\view;
 
 use FS;
-use projectorangebox\view\parsers\ParserInterface;
-use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
+use projectorangebox\view\ParserInterface;
+use projectorangebox\view\exceptions\TemplateNotFoundException;
 
 abstract class ParserAbstract implements ParserInterface
 {
@@ -101,10 +101,10 @@ abstract class ParserAbstract implements ParserInterface
 	}
 
 	/* simple mail merge */
-	public function merge(string $string, array $parameters, array $delimiters): string
+	public function merge(string $string, array $parameters): string
 	{
-		$left_delimiter = preg_quote($delimiters[0]);
-		$right_delimiter = preg_quote($delimiters[1]);
+		$left_delimiter = preg_quote($this->delimiters[0]);
+		$right_delimiter = preg_quote($this->delimiters[1]);
 
 		$replacer = function ($match) use ($parameters) {
 			return isset($parameters[$match[1]]) ? $parameters[$match[1]] : $match[0];

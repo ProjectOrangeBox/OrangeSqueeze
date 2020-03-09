@@ -21,7 +21,7 @@ class PluginFinder
 
 	static public function extractNameSpace(string $filepath): string
 	{
-		$contents = \FS::file_get_contents($filepath);
+		$contents = FS::file_get_contents($filepath);
 
 		// namespace projectorangebox\validation\rules;
 		// class alpha_dash extends

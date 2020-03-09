@@ -1,0 +1,15 @@
+{
+	"name": "projectorangebox/ci_parser",
+	"authors": [{
+		"name": "Don Myers",
+		"email": "donmyers@me.com",
+		"homepage": "https://github.com/ProjectOrangeBox",
+		"role": "Everything"
+	}],
+	"description": "CI Parser",
+	"autoload": {
+		"psr-4": {
+			"projectorangebox\\ci_parser\\": "src"
+		}
+	}
+}

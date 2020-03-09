@@ -2,7 +2,7 @@
 
 namespace projectorangebox\view;
 
-use projectorangebox\view\parsers\ParserInterface;
+use projectorangebox\view\ParserInterface;
 
 interface ViewInterface
 {

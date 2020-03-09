@@ -1,0 +1,15 @@
+{
+	"name": "projectorangebox/handlebars_parser",
+	"authors": [{
+		"name": "Don Myers",
+		"email": "donmyers@me.com",
+		"homepage": "https://github.com/ProjectOrangeBox",
+		"role": "Everything"
+	}],
+	"description": "Handlebars Parser",
+	"autoload": {
+		"psr-4": {
+			"projectorangebox\\handlebars_parser\\": "src"
+		}
+	}
+}

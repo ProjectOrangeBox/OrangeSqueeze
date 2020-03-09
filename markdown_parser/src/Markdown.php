@@ -1,11 +1,11 @@
 <?php
 
-namespace projectorangebox\view\parsers;
+namespace projectorangebox\markdown_parser;
 
 use FS;
 use Michelf\Markdown as MichelfMarkdown;
-use projectorangebox\view\parsers\ParserAbstract;
-use projectorangebox\view\parsers\ParserInterface;
+use projectorangebox\view\ParserInterface;
+use projectorangebox\view\ParserAbstract;
 
 class Markdown extends ParserAbstract implements ParserInterface
 {

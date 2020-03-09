@@ -2,6 +2,13 @@
 
 #namespace \
 
+use BadMethodCallException;
+use projectorangebox\pear\PearPluginAbstract;
+use projectorangebox\pear\exceptions\PearHelperNotFoundException;
+use projectorangebox\pear\exceptions\PearPluginNotFoundException;
+use projectorangebox\common\exceptions\php\ClassNotFoundException;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
+
 class Pear
 {
 	protected static $plugins = [];
@@ -11,8 +18,13 @@ class Pear
 
 	public static function __callStatic(string $name, array $arguments = [])
 	{
+		/* have we loaded the plugins from the pear helper yet? */
 		if (empty(self::$plugins)) {
-			self::$plugins = service('pear_helper')->plugins();
+			if (service()->has('pear_helper')) {
+				self::$plugins = service('pear_helper')->plugins();
+			} else {
+				throw new PearHelperNotFoundException();
+			}
 		}
 
 		$name = 'pear_' . strtolower($name);
@@ -20,23 +32,23 @@ class Pear
 		\log_message('info', 'Pear::__callStatic::' . $name);
 
 		if (!isset(self::$plugins[$name])) {
-			throw new \projectorangebox\common\exceptions\mvc\PluginNotFoundException($name);
+			throw new PearPluginNotFoundException($name);
 		}
 
 		$namespacedClass = self::$plugins[$name];
 
 		if (!class_exists($namespacedClass, true)) {
-			throw new \projectorangebox\common\exceptions\php\ClassNotFoundException($namespacedClass);
+			throw new ClassNotFoundException($namespacedClass);
 		}
 
 		$plugin = new $namespacedClass;
 
-		if (!($plugin instanceof \projectorangebox\pear\PearPluginAbstract)) {
-			throw new \projectorangebox\common\exceptions\php\IncorrectInterfaceException('PearPluginAbstract');
+		if (!($plugin instanceof PearPluginAbstract)) {
+			throw new IncorrectInterfaceException('PearPluginAbstract');
 		}
 
 		if (!method_exists($plugin, 'render')) {
-			throw new \BadMethodCallException('PearInterface');
+			throw new BadMethodCallException('PearInterface');
 		}
 
 		/* using call_user_func_array because arguments is undetermined */

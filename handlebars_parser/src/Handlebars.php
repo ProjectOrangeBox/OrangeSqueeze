@@ -1,13 +1,13 @@
 <?php
 
-namespace projectorangebox\view\parsers;
+namespace projectorangebox\handlebars_parser;
 
 use FS;
 use Exception;
 use LightnCandy\LightnCandy;
-use projectorangebox\view\parsers\ParserInterface;
+use projectorangebox\view\ParserInterface;
 use projectorangebox\common\exceptions\io\FileNotFoundException;
-use projectorangebox\view\parsers\exceptions\HandlebarsException;
+use projectorangebox\handlebars_parser\exceptions\HandlebarsException;
 use projectorangebox\common\exceptions\mvc\PartialNotFoundException;
 use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
 
