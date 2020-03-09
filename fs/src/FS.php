@@ -248,9 +248,12 @@ class FS
 	 * @param mixed $mode
 	 * @return bool
 	 */
-	static public function chmod(string $filename, $mode): bool
+	static public function chmod(string $filename, int $mode): bool
 	{
-		return \chmod(self::resolve($filename), $mode);
+		$filename = self::resolve($filename);
+
+		/* check if the file owner and php script owner are the same or this will throw an error */
+		return (\fileowner($filename) == \posix_geteuid()) ? \chmod($filename, $mode) : false;
 	}
 
 	/**

@@ -16,10 +16,10 @@
  *
  */
 
-namespace projectorangebox\ci_parser\exceptions;
+namespace projectorangebox\parser_handlebars\exceptions;
 
 use Exception;
 
-class CiParsingException extends Exception
+class HandlebarsException extends Exception
 {
 }

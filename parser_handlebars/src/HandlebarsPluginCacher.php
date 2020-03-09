@@ -16,7 +16,7 @@
  *
  */
 
-namespace projectorangebox\handlebars_parser;
+namespace projectorangebox\parser_handlebars;
 
 use FS;
 

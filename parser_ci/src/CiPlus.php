@@ -16,11 +16,11 @@
  *
  */
 
-namespace projectorangebox\ci_parser;
+namespace projectorangebox\parser_ci;
 
 use FS;
 use Exception;
-use projectorangebox\ci_parser\Ci;
+use projectorangebox\parser_ci\Ci;
 use projectorangebox\view\ParserInterface;
 
 class CiPlus extends Ci implements ParserInterface

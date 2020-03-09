@@ -16,7 +16,7 @@
  *
  */
 
-namespace projectorangebox\page_parser\exceptions;
+namespace projectorangebox\parser_page\exceptions;
 
 use Exception;
 

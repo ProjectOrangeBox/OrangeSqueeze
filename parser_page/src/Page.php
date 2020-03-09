@@ -16,7 +16,7 @@
  *
  */
 
-namespace projectorangebox\page_parser;
+namespace projectorangebox\parser_page;
 
 use projectorangebox\view\ParserInterface;
 use projectorangebox\view\ParserAbstract;
