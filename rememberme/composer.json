@@ -1,15 +1,15 @@
 {
-	"name": "projectorangebox/parser_ci",
+	"name": "projectorangebox/rememberme",
 	"authors": [{
 		"name": "Don Myers",
 		"email": "donmyers@me.com",
 		"homepage": "https://github.com/ProjectOrangeBox",
 		"role": "Everything"
 	}],
-	"description": "CI Parser",
+	"description": "Rememberme",
 	"autoload": {
 		"psr-4": {
-			"projectorangebox\\parser_ci\\": "src"
+			"projectorangebox\\rememberme\\": "src"
 		}
 	}
 }

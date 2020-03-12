@@ -16,11 +16,11 @@
  *
  */
 
-namespace projectorangebox\parser_page;
+namespace projectorangebox\parser\page;
 
-use projectorangebox\view\ParserInterface;
 use projectorangebox\view\ParserAbstract;
-use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
+use projectorangebox\view\ParserInterface;
+use projectorangebox\view\exceptions\TemplateNotFoundException;
 
 class Page extends ParserAbstract implements ParserInterface
 {

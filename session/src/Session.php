@@ -87,7 +87,7 @@ class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInter
 			session_set_cookie_params($this->config['lifetime'], $this->config['path'], $this->config['domain'], $this->config['secure'], $this->config['httponly']);
 
 			/* Refresh session cookie when "inactive", else PHP won't know we want this to refresh */
-			if ($this->config['autorefresh'] && isset($_COOKIE[$name])) {
+			if ($this->config['auto refresh'] && isset($_COOKIE[$name])) {
 				setcookie($name, $_COOKIE[$name], time() + $this->config['lifetime'], $this->config['path'], $this->config['domain'], $this->config['secure'], $this->config['httponly']);
 			}
 

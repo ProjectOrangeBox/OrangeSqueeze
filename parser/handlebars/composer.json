@@ -1,15 +1,15 @@
 {
-	"name": "projectorangebox/parser_markdown",
+	"name": "projectorangebox/parser_handlebars",
 	"authors": [{
 		"name": "Don Myers",
 		"email": "donmyers@me.com",
 		"homepage": "https://github.com/ProjectOrangeBox",
 		"role": "Everything"
 	}],
-	"description": "Parser Markdown",
+	"description": "Parser Handlebars",
 	"autoload": {
 		"psr-4": {
-			"projectorangebox\\parser_markdown\\": "src"
+			"projectorangebox\\parser\\handlebars\\": "src"
 		}
 	}
 }

@@ -16,7 +16,7 @@
  *
  */
 
-namespace projectorangebox\parser_markdown;
+namespace projectorangebox\parser\markdown;
 
 use FS;
 use Michelf\Markdown as MichelfMarkdown;

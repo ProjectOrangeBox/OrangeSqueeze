@@ -16,7 +16,7 @@
  *
  */
 
-namespace projectorangebox\parser_ci;
+namespace projectorangebox\parser\ci;
 
 use FS;
 use projectorangebox\view\ParserInterface;

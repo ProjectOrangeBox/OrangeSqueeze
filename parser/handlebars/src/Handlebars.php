@@ -16,16 +16,16 @@
  *
  */
 
-namespace projectorangebox\parser_handlebars;
+namespace projectorangebox\parser\handlebars;
 
 use FS;
 use Exception;
 use LightnCandy\LightnCandy;
 use projectorangebox\view\ParserInterface;
 use projectorangebox\common\exceptions\io\FileNotFoundException;
-use projectorangebox\parser_handlebars\exceptions\HandlebarsException;
-use projectorangebox\common\exceptions\mvc\PartialNotFoundException;
-use projectorangebox\common\exceptions\mvc\TemplateNotFoundException;
+use projectorangebox\parser\handlebars\exceptions\HandlebarsException;
+use projectorangebox\view\exceptions\PartialNotFoundException;
+use projectorangebox\view\exceptions\TemplateNotFoundException;
 
 /**
  * Handlebars Parser
