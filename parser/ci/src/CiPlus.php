@@ -25,7 +25,7 @@ use projectorangebox\view\ParserInterface;
 
 class CiPlus extends Ci implements ParserInterface
 {
-	protected function _parse(string $__path, array $__data = []): string
+	public function _parse(string $__path, array $__data = []): string
 	{
 		return $this->_ci_parse(FS::file_get_contents($__path), $__data);
 	}

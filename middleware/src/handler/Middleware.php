@@ -20,16 +20,21 @@ namespace projectorangebox\middleware\handler;
 
 use Exception;
 use projectorangebox\container\ContainerInterface;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class Middleware implements MiddlewareInterface
 {
 	protected $config;
 	protected $container;
 
-	public function __construct(array $config, ContainerInterface &$container)
+	public function __construct(array &$config)
 	{
 		$this->config = $config;
-		$this->container = $container;
+		$this->container = &$config['containerService'];
+
+		if (!($this->container instanceof ContainerInterface)) {
+			throw new IncorrectInterfaceException('ContainerInterface');
+		}
 	}
 
 	public function request(): void

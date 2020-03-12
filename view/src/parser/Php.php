@@ -16,12 +16,12 @@
  *
  */
 
-namespace projectorangebox\view;
+namespace projectorangebox\view\parser;
 
 use projectorangebox\view\ParserInterface;
 use projectorangebox\view\ParserAbstract;
 
-class Php_parser extends ParserAbstract implements ParserInterface
+class Php extends ParserAbstract implements ParserInterface
 {
 	/* The abstract class is actually based on this */
 }

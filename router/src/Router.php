@@ -23,11 +23,11 @@ class Router implements RouterInterface
 	protected $routes = [];
 	protected $captured = [];
 
-	public function __construct(array $routes)
+	public function __construct(array &$config)
 	{
 		\log_message('info', __METHOD__);
 
-		$this->routes = $routes;
+		$this->routes = $config['routes'] ?? [];
 	}
 
 	public function handle(string $uri, string $httpMethod) /* mixed */

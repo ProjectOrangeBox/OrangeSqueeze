@@ -18,12 +18,18 @@
 
 namespace projectorangebox\config;
 
+use FS;
 use projectorangebox\config\ConfigInterface;
 use projectorangebox\container\ContainerInterface;
 
 class Config implements ConfigInterface
 {
 	protected $config = [];
+
+	public function __construct(array &$config = [])
+	{
+		$this->config = &$config;
+	}
 
 	/**
 	 * Merge sent in array with current config
@@ -137,16 +143,37 @@ class Config implements ConfigInterface
 	 */
 	protected function loadFile(string $filename)
 	{
-		$filename = strtolower($filename);
+		/* load cached */
+		if (isset($this->config['config']['cache folder']) && ($this->config['config']['environment'] == 'production' || $this->config['config']['debug'] != true)) {
+			$this->loadFiles();
+		} else {
+			/* load a single */
+			$this->import(FS::resolve(trim($this->config['config']['folder'], '/') . '/' . strtolower($filename) . '.php'));
+		}
+	}
 
-		/* we don't use the FS static class in order to make this a little more standalone but you must still set __ROOT__ */
-		$file = __ROOT__ . '/' . trim($this->config['config']['folder'], '/') . '/' . $filename . '.php';
+	protected function loadFiles()
+	{
+		$cacheFile = trim($this->config['config']['cache folder'], '/') . '/combined-config.php';
 
-		if (file_exists($file)) {
-			$array = require($file);
+		if (!FS::file_exists($cacheFile)) {
+			foreach (FS::glob(trim($this->config['config']['folder'], '/') . '/*.php', 0, false, false) as $file) {
+				$this->import($file);
+			}
 
-			if ($array !== 1) {
-				$this->config[$filename] = $array;
+			FS::file_put_contents($cacheFile, FS::var_export_php($this->config));
+		} else {
+			$this->config = FS::require($cacheFile);
+		}
+	}
+
+	protected function import(string $absolutePath): void
+	{
+		if (\file_exists($absolutePath)) {
+			$array = require $absolutePath;
+
+			if (\is_array($array)) {
+				$this->config[strtolower(basename($absolutePath, '.php'))] = $array;
 			}
 		}
 	}

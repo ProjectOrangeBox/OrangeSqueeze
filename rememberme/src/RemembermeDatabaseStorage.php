@@ -30,19 +30,19 @@ class RemembermeDatabaseStorage implements RemembermeStorageInterface
 	{
 		$expireDatabase = date('Y-m-d H:i:s', time() + $expireSeconds); /* as string */
 
-		return $this->query('insert into {{tablename}} (`token`,`userid`,`expires`) values (:token, :userid, :expires)', [':token' => $token, ':userid' => $userId, ':expires' => $expireDatabase]);
+		return $this->query('insert into {%tablename%} (`token`,`userid`,`expires`) values (:token, :userid, :expires)', [':token' => $token, ':userid' => $userId, ':expires' => $expireDatabase]);
 	}
 
 	public function update(string $token, int $userId, int $expireDatabase): bool
 	{
-		return $this->query('update {{tablename}} set `userid` = :userid `expires` = :expires where `token` = :token', [':token' => $token, ':userid' => $userId, ':expires' => $expireDatabase]);
+		return $this->query('update {%tablename%} set `userid` = :userid `expires` = :expires where `token` = :token', [':token' => $token, ':userid' => $userId, ':expires' => $expireDatabase]);
 	}
 
 	public function read(string $token): int
 	{
 		$userid = 0;
 
-		$pdoStatement = $this->query('select userid from {{tablename}} where `token` = :token and expires >= now()', [':token' => $token], false);
+		$pdoStatement = $this->query('select userid from {%tablename%} where `token` = :token and expires >= now()', [':token' => $token], false);
 
 		if ($pdoStatement) {
 			$record = $pdoStatement->fetch(PDO::FETCH_ASSOC);
@@ -55,19 +55,19 @@ class RemembermeDatabaseStorage implements RemembermeStorageInterface
 
 	public function delete(string $token): Bool
 	{
-		return $this->query('delete from {{tablename}} where `token` = :token', [':token' => $token]);
+		return $this->query('delete from {%tablename%} where `token` = :token', [':token' => $token]);
 	}
 
 	public function garbageCollection(): bool
 	{
-		$this->query('delete from {{tablename}} where expires <= now()', []);
+		$this->query('delete from {%tablename%} where expires <= now()', []);
 
 		return true;
 	}
 
 	protected function query(string $sql, array $execute, bool $asBool = true)
 	{
-		$sql = str_replace('{{tablename}}', '`' . $this->tablename . '`', $sql);
+		$sql = str_replace('{%tablename%}', '`' . $this->tablename . '`', $sql);
 
 		$pdoStatement = $this->db->prepare($sql);
 

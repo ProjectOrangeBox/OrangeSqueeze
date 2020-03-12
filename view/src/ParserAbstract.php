@@ -32,7 +32,7 @@ abstract class ParserAbstract implements ParserInterface
 
 	public function __construct(array &$config)
 	{
-		$this->config = &$config;
+		$this->config = $config;
 
 		$this->views = $config['views'] ?? [];
 		$this->cacheFolder = $config['cache folder'] ?? '/var/tmp';

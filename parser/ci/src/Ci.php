@@ -14,6 +14,14 @@
  * @version v1.0
  * @filesource
  *
+ * Orginal Code
+ * @author	EllisLab Dev Team
+ * @copyright	Copyright (c) 2008 - 2014, EllisLab, Inc. (https://ellislab.com/)
+ * @copyright	Copyright (c) 2014 - 2019, British Columbia Institute of Technology (https://bcit.ca/)
+ * @license	https://opensource.org/licenses/MIT	MIT License
+ * @link	https://codeigniter.com
+ * @since	Version 1.0.0
+ *
  */
 
 namespace projectorangebox\parser\ci;
@@ -24,7 +32,7 @@ use projectorangebox\view\ParserAbstract;
 
 class Ci extends ParserAbstract implements ParserInterface
 {
-	protected function _parse(string $__path, array $__data = []): string
+	public function _parse(string $__path, array $__data = []): string
 	{
 		return $this->_ci_parse(FS::file_get_contents($__path), $__data);
 	}

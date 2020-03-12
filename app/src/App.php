@@ -97,7 +97,7 @@ class App implements AppInterface
 			throw new Exception('Services Class file not found.');
 		}
 
-		/* Create contrainer and send in the services array */
+		/* Create container and send in the services array */
 		self::$container = new $containerClass($services);
 
 		/**
@@ -116,6 +116,8 @@ class App implements AppInterface
 
 	/**
 	 * return our dependency container
+	 *
+	 * App::container();
 	 *
 	 * @return ContainerInterface
 	 */
