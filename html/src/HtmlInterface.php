@@ -34,7 +34,7 @@ interface HtmlInterface
 	public function bodyClass($class): HtmlInterface;
 	public function linkHtml(string $file): string;
 	public function scriptHtml(string $file): string;
-	public function ary2element(string $element, array $attributes, string $content = ''): string;
+	public function attributes2element(string $element, array $attributes, string $content = ''): string;
 	public function stringifyAttributes($attributes, $js = FALSE): string;
 	public function set(string $name, string $value, int $priority = Html::PRIORITY_NORMAL, int $options = 0): HtmlInterface;
 	public function get(string $name): string;

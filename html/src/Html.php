@@ -142,15 +142,15 @@ class Html implements HtmlInterface
 
 	public function linkHtml(string $file): string
 	{
-		return $this->ary2element('link', array_merge($this->linkAttributes, ['href' => $file]));
+		return $this->attributes2element('link', array_merge($this->linkAttributes, ['href' => $file]));
 	}
 
 	public function scriptHtml(string $file): string
 	{
-		return $this->ary2element('script', array_merge($this->scriptAttributes, ['src' => $file]));
+		return $this->attributes2element('script', array_merge($this->scriptAttributes, ['src' => $file]));
 	}
 
-	public function ary2element(string $element, array $attributes, string $content = ''): string
+	public function attributes2element(string $element, array $attributes, string $content = ''): string
 	{
 		return (in_array($element, $this->emptyElements)) ? '<' . $element . $this->stringifyAttributes($attributes) . '/>' : '<' . $element . $this->stringifyAttributes($attributes) . '>' . $content . '</' . $element . '>';
 	}
@@ -175,7 +175,6 @@ class Html implements HtmlInterface
 
 		return rtrim($atts, ',');
 	}
-
 
 	/* page var collection or other */
 
