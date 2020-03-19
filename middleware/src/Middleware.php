@@ -18,21 +18,78 @@
 
 namespace projectorangebox\middleware;
 
+use Exception;
 use projectorangebox\container\ContainerInterface;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
-abstract class Middleware
+class Middleware implements MiddlewareInterface
 {
+	protected $config;
 	protected $container;
 
-	public function __construct(ContainerInterface $container)
+	public function __construct(array &$config)
 	{
-		$this->container = $container;
+		$this->config = $config;
+		$this->container = &$config['containerService'];
+
+		if (!($this->container instanceof ContainerInterface)) {
+			throw new IncorrectInterfaceException('ContainerInterface');
+		}
 	}
 
-	public function __get(string $name) /* mixed */
+	public function request(): void
 	{
-		\log_message('info', __METHOD__ . ' get ' . $name);
-
-		return $this->container->$name;
+		$this->loop('request');
 	}
-}
+
+	public function response(): void
+	{
+		$this->loop('response');
+	}
+
+	protected function loop(string $method): void
+	{
+		$httpMethod = $this->container->request->requestMethod();
+		if (isset($this->config[$method], $this->config[$method][$httpMethod])) {
+			foreach ($this->config[$method][$httpMethod] as $regex => $namedSpacedClass) {
+				if (preg_match($regex, $this->container->request->uri())) {
+					if ($this->trigger($namedSpacedClass, $method) === false) {
+						break; /* break out if false returned */
+					}
+				}
+			}
+		}
+	}
+
+	protected function trigger(string $namedSpacedClass, string $method): bool
+	{
+		$continue = true;
+
+		if ($middleware = $this->exists($namedSpacedClass, $method)) {
+			if ($middleware->$method() === false) {
+				$continue = false;
+			}
+		}
+
+		/* call the controller method */
+		return $continue;
+	}
+
+	protected function exists(string $namedSpacedClass, string $method) /* mixed */
+	{
+		if (!\class_exists($namedSpacedClass, true)) {
+			throw new Exception('Could not locate "' . $namedSpacedClass . '".');
+		}
+
+		$middleware = new $namedSpacedClass($this->container);
+
+		$mustImplement = 'projectorangebox\middleware\Middleware' . \ucfirst($method) . 'Interface';
+
+		/* let's make sure they implment the correct interface this will also enforce the method */
+		if (!($middleware instanceof $mustImplement)) {
+			throw new Exception('Class "' . $namedSpacedClass . '" does not implement ' . $mustImplement . '.');
+		}
+
+		return $middleware;
+	}
+} /* end middleware class */

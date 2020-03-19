@@ -23,15 +23,19 @@ use Exception;
 use ArrayAccess;
 use Countable;
 use IteratorAggregate;
+use SessionHandlerInterface;
 use projectorangebox\session\SessionInterface;
 
 class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInterface
 {
 	protected $config = [];
+	protected $cookies = [];
 
 	public function __construct(array &$config)
 	{
-		$this->config = $config;
+		$this->config = &$config;
+
+		$this->cookies = $this->config['cookies'] ?? $_COOKIE;
 
 		$defaults = [
 			'lifetime'     => '20 minutes',
@@ -41,7 +45,7 @@ class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInter
 			'httponly'     => false,
 			'name'         => 'session',
 			'autorefresh'  => false,
-			'handler'      => '\projectorangebox\session\FileSessionHandler',
+			'handler'      => 'projectorangebox\session\handlers\FileHandler',
 			'ini_settings' => [],
 		];
 
@@ -78,32 +82,38 @@ class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInter
 	{
 		/* has a session already been started? */
 		if (session_status() === PHP_SESSION_NONE) {
+			/* session name */
 			$name = $this->config['name'];
 
-			if (isset($this->config['session save path'])) {
-				session_save_path(FS::resolve($this->config['session save path']));
+			if (isset($this->config['file']['path'])) {
+				session_save_path(FS::resolve($this->config['file']['path']));
 			}
 
 			session_set_cookie_params($this->config['lifetime'], $this->config['path'], $this->config['domain'], $this->config['secure'], $this->config['httponly']);
 
 			/* Refresh session cookie when "inactive", else PHP won't know we want this to refresh */
-			if ($this->config['auto refresh'] && isset($_COOKIE[$name])) {
-				setcookie($name, $_COOKIE[$name], time() + $this->config['lifetime'], $this->config['path'], $this->config['domain'], $this->config['secure'], $this->config['httponly']);
+			if ($this->config['auto refresh'] && isset($this->cookies[$name])) {
+				setcookie($name, $this->cookies[$name], time() + $this->config['lifetime'], $this->config['path'], $this->config['domain'], $this->config['secure'], $this->config['httponly']);
 			}
 
 			session_name($name);
 
-			$handler = new $this->config['handler']();
+			/* attach the handler */
+			$handler = new $this->config['handler']($this->config);
 
-			if (!($handler instanceof \SessionHandlerInterface)) {
+			if (!($handler instanceof SessionHandlerInterface)) {
 				throw new Exception('Session Handler is not an instance of SessionHandlerInterface.');
 			}
 
 			session_set_save_handler($handler, true);
 
+			/* The cache limiter defines which cache control HTTP headers are sent to the client. */
 			session_cache_limiter(false);
 
+			/* fire it up */
 			session_start();
+		} else {
+			throw new Exception('Session Already Started.');
 		}
 	}
 
@@ -115,6 +125,7 @@ class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInter
 
 		if (ini_get('session.use_cookies')) {
 			$params = session_get_cookie_params();
+
 			setcookie(session_name(), '', time() - 4200, $params['path'], $params['domain'], $params['secure'], $params['httponly']);
 		}
 	}
@@ -199,4 +210,4 @@ class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInter
 	{
 		$this->delete($offset);
 	}
-}
+} /* end class */

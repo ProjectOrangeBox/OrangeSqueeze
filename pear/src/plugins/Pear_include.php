@@ -27,8 +27,8 @@ class Pear_include extends PearPluginAbstract
 	{
 		$viewService = service('view');
 
-		if ($templatePath = $viewService->page->getView($view)) {
-			$output = $viewService->page->parseSingle($templatePath, $data);
+		if ($viewService->page->exists($view)) {
+			$output = $viewService->page->parse($view, $data);
 
 			if (is_string($name)) {
 				Pear::$fragmentContents[$name] = $output;

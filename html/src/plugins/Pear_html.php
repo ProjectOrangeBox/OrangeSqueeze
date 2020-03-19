@@ -24,6 +24,6 @@ class Pear_html extends PearPluginAbstract
 {
 	public function render(string $name = null)
 	{
-		echo service('html')->get($name);
+		return ($name) ? service('html')->get($name) : service('html');
 	}
 } /* end plugin */

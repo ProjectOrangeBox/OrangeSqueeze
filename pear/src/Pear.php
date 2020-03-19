@@ -18,7 +18,6 @@
 
 #namespace \
 
-use BadMethodCallException;
 use projectorangebox\pear\PearPluginAbstract;
 use projectorangebox\pear\exceptions\PearHelperNotFoundException;
 use projectorangebox\pear\exceptions\PearPluginNotFoundException;
@@ -64,7 +63,7 @@ class Pear
 		}
 
 		if (!method_exists($plugin, 'render')) {
-			throw new BadMethodCallException('PearInterface');
+			throw new \BadMethodCallException('PearInterface');
 		}
 
 		/* using call_user_func_array because arguments is undetermined */

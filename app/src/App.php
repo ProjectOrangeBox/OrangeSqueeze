@@ -18,18 +18,24 @@
 
 namespace projectorangebox\app;
 
-use Exception;
 use FS;
+use Exception;
 use projectorangebox\container\ContainerInterface;
 
 class App implements AppInterface
 {
 	protected static $container;
+	protected static $env = [];
 
-	public function __construct(array &$config)
+	public function __construct(array $config)
 	{
+		self::$env = (isset($config['env'])) ? array_merge($_ENV, $config['env']) : $_ENV;
+
 		/* set End Of Line based on request type */
 		define('EOL', (PHP_SAPI == 'cli') ? PHP_EOL : '<br />');
+
+		/* default to production environment */
+		define('ENVIRONMENT', ($config['environment'] ?? 'production'));
 
 		/* set debug value if set */
 		define('DEBUG', ($config['debug'] ?? false));
@@ -55,63 +61,22 @@ class App implements AppInterface
 		/* Set File System Functions Root Directory and chdir to it */
 		FS::setRoot(__ROOT__, true);
 
-		/* default to production environment */
-		define('ENVIRONMENT', ($config['environment'] ?? 'production'));
-
-		/* load the users ENVIRONMENT bootstrap file if present */
-		if (FS::file_exists('Bootstrap.' . ENVIRONMENT . '.php')) {
-			require FS::resolve('Bootstrap.' . ENVIRONMENT . '.php');
-		}
-
-		/* load the users bootstrap file if present */
-		if (FS::file_exists('Bootstrap.php')) {
-			require FS::resolve('Bootstrap.php');
-		}
-
-		/* set the most basic exception handler inside common.php file */
-		set_exception_handler('showException');
-
-		/* use default */
-		$config['services config file'] = $config['services config file'] ?? '/config/services.php';
+		/* get absolute path */
+		$servicesPath = FS::resolve($config['services']);
 
 		/* Is the services configuration file there? */
-		if (!FS::file_exists($config['services config file'])) {
-			throw new Exception('Services configuration file not found.');
+		if (!file_exists($servicesPath)) {
+			throw new Exception('Services file not found.');
 		}
 
 		/* load the services array from the config file */
-		$services = FS::require($config['services config file']);
+		$services = require $servicesPath;
 
-		/* did this return an array? */
-		if (!\is_array($services)) {
-			throw new Exception('Services configuration file is not an array.');
-		}
+		/* Create container manually and send in the services array */
+		self::$container = $services['container'][0]($services);
 
-		/* use default */
-		$config['containerClass'] = $config['containerClass'] ?? '\projectorangebox\container\Container';
-
-		$containerClass = $config['containerClass'];
-
-		/* does the container class exists? */
-		if (!\class_exists($containerClass, true)) {
-			throw new Exception('Services Class file not found.');
-		}
-
-		/* Create container and send in the services array */
-		self::$container = new $containerClass($services);
-
-		/**
-		 * Send the container service into the services common function
-		 * This is in common.php and therefore based on your composer.json autoloader
-		 * should be already loaded
-		 * self::container is passed by reference
-		 */
-		if (\function_exists('service')) {
-			service(null, self::$container);
-		}
-
-		/* Setup our configuration object with the configuration array if it's not found it will throw an error */
-		self::$container->config->replace(['config' => $config]);
+		/* We are going to manaully instancate and attach the Config Singleton which is registered in the service array */
+		self::$container->config = $services['config'][0]($config);
 	}
 
 	/**
@@ -121,9 +86,18 @@ class App implements AppInterface
 	 *
 	 * @return ContainerInterface
 	 */
-	static public function container(): ContainerInterface
+	static public function container(string $serviceName = null) /* mixed */
 	{
-		return self::$container;
+		return ($serviceName) ? self::$container->get($serviceName) : self::$container;
+	}
+
+	static public function env(string $key, $default = '#NOVALUE#')
+	{
+		if (!isset(self::$env[$key]) && $default === '#NOVALUE#') {
+			throw new \Exception('The environmental variable "' . $key . '" is not set and no default was provided.');
+		}
+
+		return self::$env[$key] ?? $default;
 	}
 
 	public function dispatch(): void

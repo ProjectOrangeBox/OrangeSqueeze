@@ -41,11 +41,13 @@ class Html implements HtmlInterface
 	protected $linkAttributes = ['href' => '', 'type' => 'text/css', 'rel' => 'stylesheet'];
 	protected $scriptAttributes = ['src' => '', 'type' => 'text/javascript', 'charset' => 'utf-8'];
 	protected $bodyClasses = '';
+	protected $trim = true;
 
 	public function __construct(array &$config)
 	{
 		$this->config = $config;
 
+		$this->trim = $config['trim'] ?? $this->trim;
 		$this->linkAttributes = $config['link attributes'] ?? $this->linkAttributes;
 		$this->scriptAttributes = $config['script attributes'] ?? $this->scriptAttributes;
 
@@ -117,7 +119,7 @@ class Html implements HtmlInterface
 			$value = ((is_scalar($value)) ? 'var ' . $key . '="' . str_replace('"', '\"', $value) . '";' : 'var ' . $key . '=' . json_encode($value, JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE) . ';');
 		}
 
-		return $this->set('jsVariables', $value, $priority);
+		return $this->set('js_variables', $value, $priority);
 	}
 
 	public function jsVariables(array $array): HtmlInterface
@@ -189,10 +191,11 @@ class Html implements HtmlInterface
 		/* if replace then remove what in there now */
 		if ($options & Html::REPLACE) {
 			$this->variables[$name] = [];
+			$this->variableCaches[$name] = '';
 		}
 
 		if (!isset($this->duplicates[$key]) || $options & Html::ALLOWDUPS) {
-			$this->variables[$name][Html::IDX_SORTED] = !isset($this->variables[$name]); /* sorted */
+			$this->variables[$name][Html::IDX_SORTED] = false; /* sorted */
 			$this->variables[$name][Html::IDX_PRIORITY][] = (int) $priority; /* unix priority */
 			$this->variables[$name][Html::IDX_VALUE][] = $value; /* actual html content (string) */
 
@@ -209,7 +212,7 @@ class Html implements HtmlInterface
 		if (isset($this->variables[$name])) {
 			/* has it already been sorted */
 			if (!$this->variables[$name][Html::IDX_SORTED]) {
-				/* no we must sort it */
+				/* nope! we must sort it */
 				array_multisort($this->variables[$name][Html::IDX_PRIORITY], SORT_DESC, SORT_NUMERIC, $this->variables[$name][Html::IDX_VALUE]);
 
 				/* build the responds */
@@ -226,6 +229,6 @@ class Html implements HtmlInterface
 			}
 		}
 
-		return $response;
+		return ($this->trim) ? trim($response) : $response;
 	}
 }

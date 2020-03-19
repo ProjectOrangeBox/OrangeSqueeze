@@ -19,15 +19,18 @@
 namespace projectorangebox\viewresponse;
 
 use InvalidArgumentException;
-use projectorangebox\common\exceptions\mvc\ViewNotFoundException;
-use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
-use projectorangebox\response\ResponseInterface;
 use projectorangebox\view\ViewInterface;
+use projectorangebox\response\ResponseInterface;
+use projectorangebox\view\exceptions\ViewNotFoundException;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class ViewResponse implements ViewResponseInterface
 {
 	/* default server content type */
 	protected $contentType = 'text/html';
+
+	/* content type */
+	protected $type = '';
 
 	/* default exit code */
 	protected $exitCode = 0;
@@ -36,7 +39,7 @@ class ViewResponse implements ViewResponseInterface
 	protected $statusCode = 200;
 
 	/* prefix when trying to load a format/view */
-	protected $formatFilePrefix = '';
+	protected $viewFormat = '';
 
 	/* convert simple "type" into server content type response */
 	protected $typeMap = [
@@ -49,7 +52,11 @@ class ViewResponse implements ViewResponseInterface
 	/* default charset */
 	protected $charset = 'UTF-8';
 
+	/* should a responds be sent? */
 	protected $response = false;
+
+	/* view parser */
+	protected $parserHandler = 'php';
 
 	protected $viewService;
 	protected $responseService;
@@ -69,11 +76,13 @@ class ViewResponse implements ViewResponseInterface
 		$this->type(($config['type'] ?? 'html'), ($config['charset'] ?? $this->charset));
 		$this->code($config['status code'] ?? $this->statusCode);
 
-		$this->formatFilePrefix = '/' . trim($config['format file prefix'], '/') . '/';
+		$this->viewFormat = $config['view format'] ?? 'formats/{type}/{view}';
 
 		/* override auto set */
 		$this->exitCode = $config['exit code'] ?? $this->exitCode;
 		$this->contentType = $config['content type'] ?? $this->contentType;
+
+		$this->parserHandler = $config['parser'] ?? $this->parserHandler;
 
 		$this->viewService = $config['viewService'];
 
@@ -103,15 +112,21 @@ class ViewResponse implements ViewResponseInterface
 		return $this;
 	}
 
-	public function view(array $array = [], string $view = null): string
+	public function view(array $data = [], string $view = null): string
 	{
-		$view = trim($this->formatFilePrefix . ($view ?? $this->statusCode), '/');
+		if (!$view) {
+			$view = str_replace(
+				['{type}', '{status}', '{mime}', '{charset}', '{exit}'],
+				[$this->type, $this->statusCode, $this->contentType, $this->charset, $this->exitCode],
+				$this->viewFormat
+			);
+		}
 
-		if (!$this->viewService->php->exists($view)) {
+		if (!$this->viewService->{$this->parserHandler}->exists($view)) {
 			throw new ViewNotFoundException($view);
 		}
 
-		$formatted = $this->viewService->php->parse($view, $array);
+		$formatted = $this->viewService->{$this->parserHandler}->parse($view, $data);
 
 		if ($this->response) {
 			if ($this->contentType) {
@@ -136,6 +151,7 @@ class ViewResponse implements ViewResponseInterface
 			throw new InvalidArgumentException('Unknown Content Type.');
 		}
 
+		$this->type = $type;
 		$this->contentType = $this->typeMap[$type];
 		$this->charset = $charset;
 	}

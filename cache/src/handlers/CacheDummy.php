@@ -18,9 +18,10 @@
 
 namespace projectorangebox\cache\handlers;
 
+use projectorangebox\cache\CacheAbstract;
 use projectorangebox\cache\CacheInterface;
 
-class CacheDummy implements CacheInterface
+class CacheDummy extends CacheAbstract implements CacheInterface
 {
 	public function __construct(array &$config)
 	{
@@ -54,7 +55,7 @@ class CacheDummy implements CacheInterface
 		return true;
 	}
 
-	public function cache_info(): array
+	public function cacheInfo(): array
 	{
 		\log_message('info', 'Dummy Cache Info');
 

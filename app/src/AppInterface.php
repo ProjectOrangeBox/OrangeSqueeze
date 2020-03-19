@@ -22,8 +22,9 @@ use projectorangebox\container\ContainerInterface;
 
 interface AppInterface
 {
-	static public function container(): ContainerInterface;
-
-	public function __construct(array &$config);
+	public function __construct(array $config);
 	public function dispatch(): void;
+
+	static public function container(string $serviceName = null); /* mixed */
+	static public function env(string $key, $default = '#NOVALUE#'); /* mixed */
 }

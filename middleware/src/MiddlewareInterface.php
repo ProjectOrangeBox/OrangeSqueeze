@@ -16,12 +16,11 @@
  *
  */
 
-namespace projectorangebox\viewresponse;
+namespace projectorangebox\middleware;
 
-interface ViewResponseInterface
+interface MiddlewareInterface
 {
-
 	public function __construct(array &$config);
-	public function response(int $statusCode = null, string $type = null, string $charset = 'UTF-8'): ViewResponseInterface;
-	public function view(array $data = [], string $view = null): string;
+	public function request(): void;
+	public function response(): void;
 }

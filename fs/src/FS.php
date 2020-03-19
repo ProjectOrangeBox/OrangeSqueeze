@@ -535,8 +535,6 @@ class FS
 		/* flush from the cache */
 		if (\function_exists('opcache_invalidate')) {
 			$success = \opcache_invalidate($pathname, true);
-		} elseif (\function_exists('apc_delete_file')) {
-			$success = \apc_delete_file($pathname);
 		}
 
 		return $success;

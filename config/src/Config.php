@@ -19,16 +19,32 @@
 namespace projectorangebox\config;
 
 use FS;
+use Exception;
 use projectorangebox\config\ConfigInterface;
 use projectorangebox\container\ContainerInterface;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class Config implements ConfigInterface
 {
 	protected $config = [];
 
-	public function __construct(array &$config = [])
+	protected $configFolder;
+	protected $container;
+
+	public function __construct(array &$config)
 	{
-		$this->config = &$config;
+		if (!isset($config['config folder'])) {
+			throw new Exception('Config folder not provided.');
+		}
+
+		$this->configFolder = trim($config['config folder'], '/');
+
+		if (!FS::is_dir($this->configFolder)) {
+			throw new Exception('Config folder ' . $this->configFolder . 'is not a valid path.');
+		}
+
+		/* load the config file */
+		$this->loadFile('config');
 	}
 
 	/**
@@ -43,19 +59,6 @@ class Config implements ConfigInterface
 		foreach ($array as $index => $value) {
 			$this->set($index, $value);
 		}
-
-		return $this;
-	}
-
-	/**
-	 * Completely replace the entire Configuration Array
-	 *
-	 * @param array &$array
-	 * @return ContainerInterface
-	 */
-	public function replace(array $array): ConfigInterface
-	{
-		$this->config = &$array;
 
 		return $this;
 	}
@@ -91,7 +94,7 @@ class Config implements ConfigInterface
 			 * have they also included a config file folder?
 			 * because we need that to know where the config file are
 			 */
-			if (!isset($this->config[$segments[0]]) && isset($this->config['config']['folder'])) {
+			if (!isset($this->config[$segments[0]]) && $this->configFolder) {
 				$this->loadFile($segments[0]);
 			}
 
@@ -143,37 +146,13 @@ class Config implements ConfigInterface
 	 */
 	protected function loadFile(string $filename)
 	{
-		/* load cached */
-		if (isset($this->config['config']['cache folder']) && ($this->config['config']['environment'] == 'production' || $this->config['config']['debug'] != true)) {
-			$this->loadFiles();
-		} else {
-			/* load a single */
-			$this->import(FS::resolve(trim($this->config['config']['folder'], '/') . '/' . strtolower($filename) . '.php'));
-		}
-	}
+		$absolutePath = FS::resolve($this->configFolder . '/' . strtolower($filename) . '.php');
 
-	protected function loadFiles()
-	{
-		$cacheFile = trim($this->config['config']['cache folder'], '/') . '/combined-config.php';
-
-		if (!FS::file_exists($cacheFile)) {
-			foreach (FS::glob(trim($this->config['config']['folder'], '/') . '/*.php', 0, false, false) as $file) {
-				$this->import($file);
-			}
-
-			FS::file_put_contents($cacheFile, FS::var_export_php($this->config));
-		} else {
-			$this->config = FS::require($cacheFile);
-		}
-	}
-
-	protected function import(string $absolutePath): void
-	{
 		if (\file_exists($absolutePath)) {
 			$array = require $absolutePath;
 
 			if (\is_array($array)) {
-				$this->config[strtolower(basename($absolutePath, '.php'))] = $array;
+				$this->config[basename($absolutePath, '.php')] = $array;
 			}
 		}
 	}

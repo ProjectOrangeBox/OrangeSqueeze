@@ -19,18 +19,19 @@
 namespace projectorangebox\cache\handlers;
 
 use FS;
+use projectorangebox\cache\CacheAbstract;
 use projectorangebox\cache\CacheInterface;
 
-class CacheFile implements CacheInterface
+class CacheFile extends CacheAbstract implements CacheInterface
 {
 	protected $cachePath = '';
-	protected $ttl;
 
 	public function __construct(array &$config)
 	{
-		/* make cache path ready to use */
-		$this->cachePath = rtrim($config['path'], '/') . '/';
 		$this->ttl = $config['ttl'] ?? 0;
+
+		/* make cache path ready to use */
+		$this->cachePath = rtrim($config['file']['path'], '/') . '/';
 
 		FS::mkdir($this->cachePath);
 	}
@@ -41,7 +42,7 @@ class CacheFile implements CacheInterface
 
 		$get = false;
 
-		if (FS::file_exists($this->cachePath . $key . '.meta' . $this->suffix) && FS::file_exists($this->cachePath . $key)) {
+		if (FS::file_exists($this->cachePath . $key . '.meta') && FS::file_exists($this->cachePath . $key)) {
 			$meta = $this->getMetadata($key);
 
 			if ($this->isExpired($meta['expire'])) {
@@ -105,7 +106,7 @@ class CacheFile implements CacheInterface
 		return true;
 	}
 
-	public function cache_info(): array
+	public function cacheInfo(): array
 	{
 		$keys = [];
 
@@ -119,28 +120,9 @@ class CacheFile implements CacheInterface
 	public function clean(): bool
 	{
 		foreach (FS::glob($this->cachePath . '*') as $path) {
-			self::delete($path);
+			$this->delete($path);
 		}
 
 		return true;
-	}
-
-	public function ttl(int $cacheTTL = null, bool $useWindow = true): int
-	{
-		$cacheTTL = $cacheTTL ?? $this->ttl;
-
-		/* are we using the window option? */
-		if ($useWindow) {
-			/*
-			let determine the window size based on there cache time to live length no more than 5 minutes
-			if your traffic to the cache data is that light then cache stampede shouldn't be a problem
-			*/
-			$window = min(300, ceil($cacheTTL * .02));
-
-			/* add it to the cache_ttl to get our "new" cache time to live */
-			$cacheTTL += mt_rand(-$window, $window);
-		}
-
-		return $cacheTTL;
 	}
 } /* end class */

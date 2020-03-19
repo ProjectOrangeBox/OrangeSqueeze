@@ -24,6 +24,6 @@ class Pear_element extends PearpluginAbstract
 {
 	public function render($element, $attributes, $content = '')
 	{
-		echo service('html')->attributes2element($element, $attributes, $content);
+		return service('html')->attributes2element($element, $attributes, $content);
 	}
 } /* end plugin */

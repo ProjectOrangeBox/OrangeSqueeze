@@ -19,9 +19,10 @@
 namespace projectorangebox\cache;
 
 use Exception;
+use projectorangebox\cache\CacheAbstract;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
-class Cache implements CacheInterface
+class Cache extends CacheAbstract implements CacheInterface
 {
 	protected $knownCacheServices;
 	protected $defaultService;
@@ -78,9 +79,9 @@ class Cache implements CacheInterface
 		return $this->defaultService->delete($key);
 	}
 
-	public function cache_info(): array
+	public function cacheInfo(): array
 	{
-		return $this->defaultService->cache_info();
+		return $this->defaultService->cacheInfo();
 	}
 
 	public function clean(): bool

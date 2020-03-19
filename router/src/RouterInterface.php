@@ -21,6 +21,6 @@ namespace projectorangebox\router;
 interface RouterInterface
 {
 	public function __construct(array &$config);
-	public function handle(string $uri, string $httpMethod); /* mixed */
+	public function handle(string $uri, string $httpMethod): array;
 	public function captured(): array;
 }

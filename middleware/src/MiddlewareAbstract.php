@@ -16,13 +16,23 @@
  *
  */
 
-namespace projectorangebox\middleware\handler;
+namespace projectorangebox\middleware;
 
 use projectorangebox\container\ContainerInterface;
 
-interface MiddlewareInterface
+abstract class MiddlewareAbstract
 {
-	public function __construct(array &$config);
-	public function request(): void;
-	public function response(): void;
+	protected $container;
+
+	public function __construct(ContainerInterface $container)
+	{
+		$this->container = $container;
+	}
+
+	public function __get(string $name) /* mixed */
+	{
+		\log_message('info', __METHOD__ . ' get ' . $name);
+
+		return $this->container->$name;
+	}
 }

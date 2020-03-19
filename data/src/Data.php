@@ -16,7 +16,7 @@ class Data implements DataInterface
 
 	public function __construct(array &$config)
 	{
-		$this->dot = new Dot;
+		$this->dot = new Dot; /* Adbar\Dot */
 
 		if (isset($config['sessionService'])) {
 			$this->sessionService = $config['sessionService'];
@@ -25,9 +25,13 @@ class Data implements DataInterface
 				throw new IncorrectInterfaceException('SessionInterface');
 			}
 
+			\log_message('info', 'Persistence Data Supported.');
+
 			$this->persistenceSupported = true;
 
 			$this->pullPersist();
+		} else {
+			\log_message('info', 'Persistence Data Not Supported.');
 		}
 	}
 

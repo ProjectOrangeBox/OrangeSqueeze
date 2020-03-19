@@ -19,12 +19,12 @@
 namespace projectorangebox\dispatcher;
 
 use Exception;
-use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
-use projectorangebox\container\ContainerInterface;
-use projectorangebox\middleware\handler\MiddlewareInterface;
+use projectorangebox\router\RouterInterface;
 use projectorangebox\request\RequestInterface;
 use projectorangebox\response\ResponseInterface;
-use projectorangebox\router\RouterInterface;
+use projectorangebox\container\ContainerInterface;
+use projectorangebox\middleware\MiddlewareInterface;
+use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
 class Dispatcher implements DispatcherInterface
 {
@@ -85,6 +85,15 @@ class Dispatcher implements DispatcherInterface
 		$uri = $this->requestService->uri();
 		$matched = $this->routerService->handle($uri, $httpMethod);
 
+		list($namespaceClass, $method, $parameters) = $matched;
+
+		$method = $method ?? 'index';
+		$parameters = $parameters ?? '';
+
+		if (!$namespaceClass) {
+			throw new Exception('Route Service returned invalid Controller Class.');
+		}
+
 		$this->captured = $this->routerService->captured();
 		$this->segments = explode('/', $uri);
 
@@ -97,18 +106,6 @@ class Dispatcher implements DispatcherInterface
 		if ($this->hasMiddlewareHandlerService) {
 			/* passed by reference */
 			$this->middlewareHandlerService->request();
-		}
-
-		if (is_array($matched)) {
-			list($namespaceClass, $method, $parameters) = $matched;
-
-			$method = $method ?? 'index';
-			$parameters = $parameters ?? '';
-		} else {
-			$namespaceClass = $matched;
-
-			$method = 'index';
-			$parameters = '';
 		}
 
 		if (!\class_exists($namespaceClass, true)) {

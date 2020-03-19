@@ -30,7 +30,7 @@ class Router implements RouterInterface
 		$this->routes = $config['routes'] ?? [];
 	}
 
-	public function handle(string $uri, string $httpMethod) /* mixed */
+	public function handle(string $uri, string $httpMethod): array
 	{
 		/* clear captured */
 		$this->captured = [];
@@ -41,7 +41,7 @@ class Router implements RouterInterface
 		log_message('info', 'URI ' . $uri);
 
 		/* default to no match */
-		$matched = false;
+		$matched = [];
 
 		if (is_array($this->routes[$httpMethod])) {
 			foreach ($this->routes[$httpMethod] as $regex => $matched) {

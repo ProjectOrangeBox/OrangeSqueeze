@@ -19,7 +19,7 @@
 if (!function_exists('show_error')) {
 	function show_error(string $title, string $body)
 	{
-		service('formatter')->display(['title' => $title, 'body' => $body], 'show_error');
+		service('viewresponse')->display(['title' => $title, 'body' => $body], 'show_error');
 	}
 }
 
@@ -27,7 +27,7 @@ if (!function_exists('dieOnError')) {
 	function dieOnError(int $code, string $notation = null)
 	{
 		if (service('data')->has($notation)) {
-			service('formatter')->send($code)->display(['errors' => service('data')->get($notation)]);
+			service('viewresponse')->send($code)->display(['errors' => service('data')->get($notation)]);
 		}
 	}
 }
@@ -42,10 +42,8 @@ if (!function_exists('redirect')) {
 	 */
 	function redirect(string $url = '', int $http_response_code = NULL): void
 	{
-		$request = service('request');
-
-		$protocol = ($request->server('https', false) === false) ? 'http' : 'https';
-		$host = $request->server('http_host');
+		$protocol = (service('request')->server('https', false) === false) ? 'http' : 'https';
+		$host = service('request')->server('http_host');
 
 		header("Location: $protocol://$host$url", true, $http_response_code);
 

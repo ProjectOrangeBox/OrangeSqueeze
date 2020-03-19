@@ -25,6 +25,7 @@ interface CacheInterface
 	public function getMetadata(string $key): array;
 	public function save(string $key, $value, int $ttl = null): bool;
 	public function delete(string $key): bool;
-	public function cache_info(): array;
+	public function cacheInfo(): array;
 	public function clean(): bool;
+	public function isSupported(): bool;
 }

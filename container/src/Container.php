@@ -33,12 +33,11 @@ class Container implements ContainerInterface
 	 * @param mixed array (optional)
 	 * @return di
 	 */
-	public function __construct(array &$services = null)
+	public function __construct(array &$services)
 	{
-		if (is_array($services)) {
-			foreach ($services as $serviceName => $closureSingleton) {
-				$this->register($serviceName, $closureSingleton[0], ($closureSingleton[1] ?? true));
-			}
+		foreach ($services as $serviceName => $closureSingleton) {
+			/* name, closure, singleton or factory */
+			$this->register($serviceName, $closureSingleton[0], ($closureSingleton[1] ?? true));
 		}
 	}
 
@@ -77,9 +76,9 @@ class Container implements ContainerInterface
 	 * @param mixed $value
 	 * @return void
 	 */
-	public function __set(string $serviceName, $value): void
+	public function __set(string $serviceName, $reference): void
 	{
-		$this->register($serviceName, $value[0], $value[1]);
+		$this->registeredServices[$serviceName]['reference'] = &$reference;
 	}
 
 	/**
