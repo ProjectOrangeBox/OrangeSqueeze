@@ -16,8 +16,9 @@
  *
  */
 
-namespace projectorangebox\models\models;
+namespace projectorangebox\acl\models;
 
+use projectorangebox\acl\models\UserModelInterface;
 use projectorangebox\models\MedooValidateDatabaseModel;
 
 class UserModel extends MedooValidateDatabaseModel implements UserModelInterface
@@ -26,8 +27,8 @@ class UserModel extends MedooValidateDatabaseModel implements UserModelInterface
 	protected $table_join = 'orange_user_role';
 	protected $rules = [
 		'id' => ['field' => 'id', 'label' => 'Id', 'rules' => 'required|integer|max_length[10]|less_than[4294967295]|filter_int[10]'],
-		'username' => ['field' => 'username', 'label' => 'User Name', 'rules' => 'required|trim|projectorangebox\models\rules\aclUnique[users,username]'],
-		'email' => ['field' => 'email', 'label' => 'Email', 'rules' => 'required|trim|strtolower|valid_email|projectorangebox\models\rules\aclUnique[users,email]|max_length[255]|filter_input[255]'],
+		'username' => ['field' => 'username', 'label' => 'User Name', 'rules' => 'required|trim|is_unique[projectorangebox\acl\models\UserModel,username,id]'],
+		'email' => ['field' => 'email', 'label' => 'Email', 'rules' => 'required|trim|strtolower|valid_email|is_unique[projectorangebox\acl\models\UserModel,email,id|max_length[255]|filter_input[255]'],
 		'password' => ['field' => 'password', 'label' => 'Password', 'rules' => 'required|max_length[255]|filter_input[255]'],
 		'dashboard_url' => [],
 		'is_active' => ['field' => 'is_active', 'label' => 'Active', 'rules' => 'if_empty[0]|in_list[0,1]|filter_int[1]|max_length[1]|less_than[2]'],
@@ -61,8 +62,9 @@ class UserModel extends MedooValidateDatabaseModel implements UserModelInterface
 	{
 		if (parent::delete($id)) {
 			$this->db->delete($this->table_join, ['user_id' => $id]);
-			$this->captureErrors();
 		}
+
+		$this->captureErrors();
 
 		return ($this->errorCode() > 0);
 	}
@@ -78,6 +80,16 @@ class UserModel extends MedooValidateDatabaseModel implements UserModelInterface
 		return $password;
 	}
 
+	public function addRole(int $userId, int $roleId): bool
+	{
+		return ($this->db->insert($this->table_join, ['role_id' => $roleId, 'user_id' => $userId]) > 0);
+	}
+
+	public function removeRole(int $userId, int $roleId): bool
+	{
+		return $this->db->delete($this->table_join, ['role_id' => $roleId, 'user_id' => $userId]);
+	}
+
 	public function relink(int $userId, array $roleIds): bool
 	{
 		$this->db->beginTransaction();
@@ -86,8 +98,9 @@ class UserModel extends MedooValidateDatabaseModel implements UserModelInterface
 
 		foreach ($roleIds as $roleId) {
 			$this->db->insert($this->table_join, ['role_id' => $roleId, 'user_id' => $userId]);
-			$this->captureErrors();
 		}
+
+		$this->captureErrors();
 
 		$this->db->commit();
 

@@ -91,11 +91,11 @@ trait GetUserTrait
 			`" . $this->roleTable . "`.`name` `orange_roles_name`,
 			`" . $this->rolePermissionTable . "`.`permission_id` `orange_permission_id`,
 			`" . $this->permissionTable . "`.`key` `orange_permission_key`
-			from " . $this->userRoleTable . "
-			left join " . $this->roleTable . " on " . $this->roleTable . ".id = " . $this->userRoleTable . ".role_id
-			left join " . $this->rolePermissionTable . " on " . $this->rolePermissionTable . ".role_id = " . $this->roleTable . ".id
-			left join " . $this->permissionTable . " on " . $this->permissionTable . ".id = " . $this->rolePermissionTable . ".permission_id
-			where " . $this->userRoleTable . ".user_id = :userid";
+			from `" . $this->userRoleTable . "`
+			left join `" . $this->roleTable . "` on `" . $this->roleTable . "`.`id` = `" . $this->userRoleTable . "`.`role_id`
+			left join `" . $this->rolePermissionTable . "` on `" . $this->rolePermissionTable . "`.`role_id` = `" . $this->roleTable . "`.`id`
+			left join `" . $this->permissionTable . "` on `" . $this->permissionTable . "`.`id` = `" . $this->rolePermissionTable . "`.`permission_id`
+			where `" . $this->userRoleTable . "`.`user_id` = :userid";
 
 		$dbc = $this->query($sql, [':userid' => (int) $userId]);
 

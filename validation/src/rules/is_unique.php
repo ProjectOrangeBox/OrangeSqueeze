@@ -27,16 +27,14 @@ class is_unique extends ValidateRuleAbstract implements ValidateRuleInterface
 	{
 		$this->error_string = '%s must contain a unique value.';
 
-		list($tablename, $columnname) = explode('.', $options, 2);
+		$segs = explode(',', $options);
 
-		if (empty($tablename)) {
+		if (count($segs) != 3) {
 			return false;
 		}
 
-		if (empty($columnname)) {
-			return false;
-		}
+		list($model, $columnName, $primaryKey) = $segs;
 
-		return isset(ci()->db) ? (ci()->db->limit(1)->get_where($tablename, [$columnname => $field])->num_rows() === 0) : false;
+		return service('models')->factory($model)->isUnique($columnName, $field, service('request')->get($primaryKey));
 	}
 }

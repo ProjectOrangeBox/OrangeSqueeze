@@ -4,12 +4,15 @@ namespace projectorangebox\session;
 
 abstract class SessionHandlerAbstract
 {
+	protected $config = [];
 	protected $keyLength = 64;
 	protected $lifetime = 0;
-	protected $sessionPrefix = 'session/';
+	protected $sessionPrefix = 'session-';
 
 	public function __construct(array &$config)
 	{
+		$this->config = &$config;
+
 		$this->keyLength = $config['key length'] ?? $this->keyLength;
 		$this->lifetime = $config['lifetime'] ?? $this->lifetime;
 		$this->sessionPrefix = $config['prefix'] ?? $this->sessionPrefix;

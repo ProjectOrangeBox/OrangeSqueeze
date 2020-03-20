@@ -16,8 +16,12 @@
  *
  */
 
-namespace projectorangebox\models\models;
+namespace projectorangebox\acl\models;
 
-interface PermissionModelInterface
+interface UserModelInterface
 {
-}
+	public function insert(array $columns): int;
+	public function update(array $columns): int;
+	public function delete($id): int;
+	public function relink(int $userId, array $roleIds): bool;
+} /* end interface */

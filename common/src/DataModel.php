@@ -34,7 +34,7 @@ class DataModel
 	{
 		$this->config = $config;
 
-		$this->validateService = $config['validateService'];
+		$this->validateService = clone $config['validateService'];
 
 		if (!($this->validateService instanceof ValidateInterface)) {
 			throw new IncorrectInterfaceException('ValidateInterface');

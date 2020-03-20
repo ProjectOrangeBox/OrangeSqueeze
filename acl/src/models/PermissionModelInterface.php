@@ -16,8 +16,8 @@
  *
  */
 
-namespace projectorangebox\models\models;
+namespace projectorangebox\acl\models;
 
-interface UserModelInterface
+interface PermissionModelInterface
 {
-}
+} /* end interface */

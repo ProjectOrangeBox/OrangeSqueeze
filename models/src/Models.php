@@ -45,10 +45,15 @@ class Models implements ModelsInterface
 				throw new ClassNotFoundException($modelClass);
 			}
 
-			$this->models[$name] = new $modelClass($this->config);
+			$this->models[$name] = $this->factory($modelClass);
 		}
 
 		return $this->models[$name];
+	}
+
+	public function factory(string $modelClass)
+	{
+		return new $modelClass($this->config);
 	}
 
 	public function has(string $name): bool

@@ -85,10 +85,6 @@ class Session implements ArrayAccess, Countable, IteratorAggregate, SessionInter
 			/* session name */
 			$name = $this->config['name'];
 
-			if (isset($this->config['file']['path'])) {
-				session_save_path(FS::resolve($this->config['file']['path']));
-			}
-
 			session_set_cookie_params($this->config['lifetime'], $this->config['path'], $this->config['domain'], $this->config['secure'], $this->config['httponly']);
 
 			/* Refresh session cookie when "inactive", else PHP won't know we want this to refresh */

@@ -16,8 +16,10 @@
  *
  */
 
-namespace projectorangebox\models\models;
+namespace projectorangebox\acl\models;
 
 interface RoleModelInterface
 {
-}
+	public function delete($id): int;
+	public function relink(int $roleId, array $permissionIds): bool;
+} /* end interface */

@@ -25,7 +25,7 @@ use projectorangebox\models\DatabaseModel;
 use projectorangebox\models\DatabaseModelInterface;
 use projectorangebox\common\exceptions\php\IncorrectInterfaceException;
 
-class MedooDatabaseModel extends DatabaseModel implements DatabaseModelInterface
+class MedooDatabaseModel extends DatabaseModel implements DatabaseModelInterface, MedooDatabaseInterface
 {
 	protected $columns = '*';
 	protected $orderBy = [];
@@ -156,9 +156,9 @@ class MedooDatabaseModel extends DatabaseModel implements DatabaseModelInterface
 		return $this->pdoStatement->rowCount();
 	}
 
-	public function isUnique($columnName, $columnValue, $primary): bool
+	public function isUnique($columnName, $columnValue, $primaryValue): bool
 	{
-		$records = $this->db->select($this->table, $this->primaryKey, [$columnName => $columnValue, 'LIMIT' => 3]);
+		$records = $this->db->select($this->tablename, $this->primaryKey, [$columnName => $columnValue, 'LIMIT' => 3]);
 
 		$rowsFound = count($records);
 
@@ -173,7 +173,7 @@ class MedooDatabaseModel extends DatabaseModel implements DatabaseModelInterface
 		}
 
 		/* is the one we found this actual record? */
-		return ($records[0] == $primary);
+		return ($records[0] == $primaryValue);
 	}
 
 	public function lastQuery(): string

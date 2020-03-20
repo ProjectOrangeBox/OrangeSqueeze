@@ -18,8 +18,8 @@
 
 namespace projectorangebox\filter\exceptions;
 
-use projectorangebox\common\exceptions\MVCException;
+use Exception;
 
-class FilterNotFoundException extends MVCException
+class FilterNotFoundException extends Exception
 {
 }

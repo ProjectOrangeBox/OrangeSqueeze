@@ -32,6 +32,8 @@ class MedooValidateDatabaseModel extends MedooDatabaseModel
 			$id = $this->db->id();
 		}
 
+		$this->captureErrors();
+
 		return $id ?? 0;
 	}
 
@@ -44,6 +46,8 @@ class MedooValidateDatabaseModel extends MedooDatabaseModel
 
 			$count = $pdoStatement->rowCount();
 		}
+
+		$this->captureErrors();
 
 		return $count;
 	}
@@ -59,6 +63,8 @@ class MedooValidateDatabaseModel extends MedooDatabaseModel
 
 			$count = $pdoStatement->rowCount();
 		}
+
+		$this->captureErrors();
 
 		return $count;
 	}

@@ -29,8 +29,10 @@ class FileSessionHandler extends SessionHandlerAbstract implements SessionHandle
 
 	public function open($save_path, $session_name): bool
 	{
-		if (!FS::is_dir($this->save_path)) {
-			FS::mkdir($this->save_path, 0777);
+		$save_path = FS::resolve($this->config['file']['path']);
+
+		if (!FS::is_dir($save_path)) {
+			FS::mkdir($save_path, 0777);
 		}
 
 		$this->savePath = $save_path . '/' . $this->sessionPrefix;

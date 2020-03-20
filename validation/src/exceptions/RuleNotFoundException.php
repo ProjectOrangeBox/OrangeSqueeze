@@ -18,8 +18,8 @@
 
 namespace projectorangebox\validation\exceptions;
 
-use projectorangebox\common\exceptions\MVCException;
+use Exception;
 
-class RuleNotFoundException extends MVCException
+class RuleNotFoundException extends Exception
 {
 }
