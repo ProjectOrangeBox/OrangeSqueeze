@@ -4,7 +4,6 @@ namespace projectorangebox\acl;
 
 use PDO;
 use Exception;
-use projectorangebox\user\UserInterface;
 use projectorangebox\acl\models\RoleModelInterface;
 use projectorangebox\acl\models\UserModelInterface;
 use projectorangebox\acl\models\PermissionModelInterface;
